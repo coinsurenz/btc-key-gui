@@ -1,4 +1,4 @@
-# BIP39 GUI
+# BTC KEY GUI
 
 After completing Jimmy Song's programming blockchain course I decided it would be a good learning experience to try and write my own implimentation of BIP-32 and BIP-39 from scratch using the documentation only.  With a few exceptions where I really hit a wall this is all my own code- excluding the ECDSA and bech32/p2pkh address generation functions that I took from the programming blockchain code and Peter Wuille's bech32 example.  My intention is to do the same with these parts of the code at a later date.  
 
