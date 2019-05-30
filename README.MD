@@ -20,8 +20,7 @@ ecdsa
 
 --User input for total number of addresses desired
 
---Creation of P2PKH, P2SH, P2WPKH and P2SH addresses as per BIP32 spec, using a word list as the starting point following the 
-BIP39 standard .  
+--Creation of P2PKH, P2SH, P2WPKH and P2WSH addresses along with xpiv and xpub as per BIP32 spec, using a word list as the starting point following the BIP39 standard.  
 
 --Presets for BIP44, BIP49, BIP84 and BIP141 standards, along with custom user input for derivation path
 
