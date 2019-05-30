@@ -12,6 +12,11 @@ PyQt5
 pbkdf2
 ecdsa
 ```
+## USAGE
+git clone repo
+python3 bip39_gui.py
+
+
 
 ## FEATURES
 ![Screenshot](https://i.imgur.com/EORcZbE.png)
