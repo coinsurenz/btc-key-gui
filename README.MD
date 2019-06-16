@@ -13,8 +13,8 @@ pbkdf2
 ecdsa
 ```
 ## USAGE
-git clone repo
-python3 bip39_gui.py
+clone the repo and run 
+"python3 bip39_gui.py" at the commandline
 
 
 
