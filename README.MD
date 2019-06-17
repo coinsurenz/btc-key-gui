@@ -1,6 +1,6 @@
 # BTC KEY GUI
 
-After completing Jimmy Song's programming blockchain course I decided it would be a good learning experience to try and write my own implimentation of BIP-32 and BIP-39 from scratch using the documentation only.  With a few exceptions where I really hit a wall this is all my own code- excluding the ECDSA and bech32/p2pkh address generation functions that I took from the programming blockchain code and Peter Wuille's bech32 example.  My intention is to do the same with these parts of the code at a later date.  
+After completing Jimmy Song's "Programming Blockchain" course I decided it would be a good learning experience to try and write my own implimentation of BIP-32 and BIP-39 from scratch using the documentation only.  With a few exceptions where I really hit a wall this is all my own code- excluding the ECDSA and bech32/p2pkh address generation functions that I took from the programming blockchain code and Peter Wuille's bech32 example.  My intention is to do the same with these parts of the code at a later date.  
 
 Whilst doing this and experimenting with the transaction creation parts of the programming blockchain code I found it quite frustrating trying to find an easy-to-navigate source for test vectors covering all address types in testnet and mainnet I could use for evaluating my work.  This project is intended to provide a user friendly solution for future students and also to practice creating Qt Gui apps. 
 
@@ -13,8 +13,8 @@ pbkdf2
 ecdsa
 ```
 ## USAGE
-git clone repo
-python3 bip39_gui.py
+clone the repo and run 
+"python3 bip39_gui.py" at the commandline
 
 
 
