@@ -14,7 +14,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Bip39Tool(object):
     def setupUi(self, Bip39Tool):
         Bip39Tool.setObjectName("Bip39Tool")
-        Bip39Tool.resize(1450, 829)
+        Bip39Tool.resize(1450, 750)
         self.gridLayout = QtWidgets.QGridLayout(Bip39Tool)
         self.gridLayout.setObjectName("gridLayout")
         self.hardened_checkbox = QtWidgets.QCheckBox(Bip39Tool)
