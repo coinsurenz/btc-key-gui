@@ -85,15 +85,15 @@ class Keylevel:
 		identifier=(hash160(self.pub_key))[:4]
 		return bytes(identifier)
 
-	def xpiv(self):
+	def xpriv(self):
 		if self.testnet==True:
 			prefix=b'\x04\x35\x83\x94'
 		else:
 			prefix=b'\x04\x88\xAD\xE4'
-		xpivraw=prefix+bytes([self.depth])+self.fingerprint+bytes.fromhex(format(self.index, 'x').rjust(8, '0'))+self.CKCpriv()+b'\x00'+self.CKDpriv()
-		checksum = hash256(xpivraw)[:4]
-		xpivfull=xpivraw+checksum
-		return encode_base58(xpivfull)
+		xprivraw=prefix+bytes([self.depth])+self.fingerprint+bytes.fromhex(format(self.index, 'x').rjust(8, '0'))+self.CKCpriv()+b'\x00'+self.CKDpriv()
+		checksum = hash256(xprivraw)[:4]
+		xprivfull=xprivraw+checksum
+		return encode_base58(xprivfull)
 
 	def xpub(self):
 		if self.testnet==True:
@@ -112,7 +112,7 @@ def path_gen_keylist(master_cc, master_pk,master_pubkey, index_list, hardened_li
 	for index_str in index_list:
 		master_key_data=Keylevel(inputs[0], inputs[1], inputs[2], int(index_str),hardened_list[depth], depth, inputs[3], testnet)
 		inputs=[master_key_data.CKCpriv(),master_key_data.CKDpriv(), master_key_data.pubkey(),master_key_data.fprint()]
-		xpiv=master_key_data.xpiv()
+		xpriv=master_key_data.xpriv()
 		xpub=master_key_data.xpub()
 		depth+=1
 		gen_fp=Keylevel(inputs[0], inputs[1], inputs[2], int(index_str),hardened_list[depth], depth, inputs[3], testnet)
@@ -148,7 +148,7 @@ def path_gen_keylist(master_cc, master_pk,master_pubkey, index_list, hardened_li
 				index_items.insert(counter, "/")
 				counter+=2
 		derivation_path_text="m/"+ "".join(index_items[:-1])				
-		result_text= 'XPIV='+str(xpiv, 'utf-8')+'\n''XPUB='+str(xpub, 'utf-8')+'\n'+'DERIVATION PATH='+str(derivation_path_text)+ " -KEY INDEX="+str(key_index)+' HARDENED ADDRESS='+str(hardened_list[-1:])+'\n'+'privatekey='+str(path_private, 'utf-8')+'\n'+'Private hex='+privatehex+'\n'+'Private scalar='+str(string_to_int(index_key_data.CKDpriv()))+'\n'+'publickey='+public+'\n'+'public point='+str(codecs.encode(path_pubkey,'hex'), 'utf-8')+'\n'+'Script Pubkey='+script_pub+'\n'#
+		result_text= 'XPRIV='+str(xpriv, 'utf-8')+'\n''XPUB='+str(xpub, 'utf-8')+'\n'+'DERIVATION PATH='+str(derivation_path_text)+ " -KEY INDEX="+str(key_index)+' HARDENED ADDRESS='+str(hardened_list[-1:])+'\n'+'privatekey='+str(path_private, 'utf-8')+'\n'+'Private hex='+privatehex+'\n'+'Private scalar='+str(string_to_int(index_key_data.CKDpriv()))+'\n'+'publickey='+public+'\n'+'public point='+str(codecs.encode(path_pubkey,'hex'), 'utf-8')+'\n'+'Script Pubkey='+script_pub+'\n'#
 		key_index+=1
 		key_result.append(result_text)
 	return key_result
