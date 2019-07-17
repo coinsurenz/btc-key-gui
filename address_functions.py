@@ -128,12 +128,23 @@ def path_gen_keylist(master_cc, master_pk,master_pubkey, index_list, hardened_li
 		if address_type=='p2pkh':
 			public=indv_P2PKH_pub_key(index_key_data.pubkey(), testnet)
 			script_pub=p2pkh_script(index_key_data.pubkey()) 
+		
 		elif address_type=='p2sh':
-			public=indv_P2SH_pub_key(index_key_data.pubkey(), testnet)
+			redeemscript=p2sh_redeemscript(index_key_data.pubkey())
+			public=indv_P2SH_pub_key(redeemscript, testnet)
+			script_pub=p2sh_script(redeemscript)
+			p2sh_signscript=(bytes([len(redeemscript)])+redeemscript).hex()
+		
+		elif address_type=='p2wpkh-p2sh':
+			public=indv_P2WPKH_P2SH_pub_key(index_key_data.pubkey(), testnet)
 			script_pub=p2sh_script(index_key_data.pubkey())
+			redeemscript=p2wpkh_p2sh_redeemscript(index_key_data.pubkey())
+			p2sh_signscript=('1976a9'+redeemscript[6:]+'88ac')
+
 		elif address_type=='p2wpkh':
 			public=indv_P2WPKH_pub_key(index_key_data.pubkey(), testnet)
 			script_pub=p2wpkh_script(index_key_data.pubkey())
+		
 		elif address_type=='p2wsh':
 			public=indv_P2WSH_pub_key(index_key_data.pubkey(), testnet)
 			script_pub=p2wsh_script(index_key_data.pubkey())
@@ -147,8 +158,12 @@ def path_gen_keylist(master_cc, master_pk,master_pubkey, index_list, hardened_li
 			else:
 				index_items.insert(counter, "/")
 				counter+=2
-		derivation_path_text="m/"+ "".join(index_items[:-1])				
-		result_text= 'XPRV='+str(xprv, 'utf-8')+'\n''XPUB='+str(xpub, 'utf-8')+'\n'+'DERIVATION PATH='+str(derivation_path_text)+ " -KEY INDEX="+str(key_index)+' HARDENED ADDRESS='+str(hardened_list[-1:])+'\n'+'privatekey='+str(path_private, 'utf-8')+'\n'+'Private hex='+privatehex+'\n'+'Private scalar='+str(string_to_int(index_key_data.CKDpriv()))+'\n'+'publickey='+public+'\n'+'public point='+str(codecs.encode(path_pubkey,'hex'), 'utf-8')+'\n'+'Script Pubkey='+script_pub+'\n'#
+		derivation_path_text="m/"+ "".join(index_items[:-1])	
+		script_to_sign_results=['p2sh', 'p2wpkh-p2sh']		
+		if address_type in script_to_sign_results:
+			result_text= 'XPRV='+str(xprv, 'utf-8')+'\n''XPUB='+str(xpub, 'utf-8')+'\n'+'DERIVATION PATH='+str(derivation_path_text)+ " -KEY INDEX="+str(key_index)+' HARDENED ADDRESS='+str(hardened_list[-1:])+'\n'+'privatekey='+str(path_private, 'utf-8')+'\n'+'Private hex='+privatehex+'\n'+'Private scalar='+str(string_to_int(index_key_data.CKDpriv()))+'\n'+'publickey='+public+'\n'+'public point='+str(codecs.encode(path_pubkey,'hex'), 'utf-8')+'\n'+'Script Pubkey='+script_pub+'\n'+'P2SH Script to sign='+p2sh_signscript+'\n'#
+		else:
+			result_text= 'XPRV='+str(xprv, 'utf-8')+'\n''XPUB='+str(xpub, 'utf-8')+'\n'+'DERIVATION PATH='+str(derivation_path_text)+ " -KEY INDEX="+str(key_index)+' HARDENED ADDRESS='+str(hardened_list[-1:])+'\n'+'privatekey='+str(path_private, 'utf-8')+'\n'+'Private hex='+privatehex+'\n'+'Private scalar='+str(string_to_int(index_key_data.CKDpriv()))+'\n'+'publickey='+public+'\n'+'public point='+str(codecs.encode(path_pubkey,'hex'), 'utf-8')+'\n'+'Script Pubkey='+script_pub+'\n'#
 		key_index+=1
 		key_result.append(result_text)
 	return key_result
@@ -172,7 +187,8 @@ def indv_P2PKH_pub_key(pubkey,testnet=True):
 	addr = encode_base58(raw)
 	return str(addr,'utf-8')
 
-def indv_P2SH_pub_key(pubkey,testnet=True):
+def indv_P2WPKH_P2SH_pub_key(pubkey,testnet=True):
+	print('TEST ADD INPUT',pubkey.hex())
 	h160 = hash160(pubkey)
 	redeemscript=hash160(b"\x00\x14" +h160)
 	if testnet==True:
@@ -183,6 +199,18 @@ def indv_P2SH_pub_key(pubkey,testnet=True):
 	addr = encode_base58(raw)
 	return str(addr,'utf-8')
 
+def indv_P2SH_pub_key(pubkey,testnet=True):
+	print('TEST ADD INPUT',pubkey.hex())
+	h160 = hash160(pubkey)
+	if testnet==True:
+		raw = b'\xC4' + h160
+	else:
+		raw = b'\x05'+h160
+	raw = raw + hash256(raw)[:4]
+	addr = encode_base58(raw)
+	return str(addr,'utf-8')
+
+
 def indv_P2WPKH_pub_key(pubkey,testnet=True):
 	h160 = hash160(pubkey)
 	if testnet==True:
@@ -192,14 +220,39 @@ def indv_P2WPKH_pub_key(pubkey,testnet=True):
 	return addr
 
 def indv_P2WSH_pub_key(pubkey, testnet=True):
-	OP_CHECKSIG = b'\xac'
-	witnessscript=bytes([len(pubkey)])+pubkey+OP_CHECKSIG
-	witnessprog=hashlib.sha256(witnessscript).digest()
+	# OP_CHECKSIG = b'\xac'
+	# witnessscript=bytes([len(pubkey)])+pubkey+OP_CHECKSIG
+	# witnessprog=hashlib.sha256(witnessscript).digest()
+	witnessprog=hashlib.sha256(pubkey).digest()
 	if testnet==True:
 		addr=encode_bech32('tb', 0, witnessprog)
 	else:
 		addr=encode_bech32('bc', 0, witnessprog)
 	return addr
+
+## rename as p2sh_segwit input- have blanked out script_pub- isnt used??
+def p2wpkh_p2sh_redeemscript(pubkey):
+    h160=hash160(pubkey)
+    redeemscript_hash=hash160(OP_0+bytes([len(h160)])+h160)
+    redeemscript_raw=(OP_0+bytes([len(h160)])+h160)
+    redeemscript_full=bytes([len(redeemscript_raw)])+redeemscript_raw
+    redeemscript_full2=bytes([len(redeemscript_full)])+redeemscript_full
+    tx_redeemscript=redeemscript_full2.hex()
+    print('TX REDM SCR-ADD THIS TO PRINT',tx_redeemscript)
+    return tx_redeemscript
+
+def p2sh_redeemscript(pubkey):
+    # redeemscript_full= b''.join([
+    tx_redeemscript= b''.join([
+        bytes([len(pubkey)]),
+        pubkey,
+        OP_CHECKSIG,
+        ])
+    # redeemscript_full2=bytes([len(redeemscript_full)])+redeemscript_full
+    # tx_redeemscript=redeemscript_full.hex()
+    print('TX REDM SCR-ADD THIS TO PRINT',tx_redeemscript.hex())
+    return tx_redeemscript 
+
 
 def encode_base58(s):
 	count = 0
@@ -313,5 +366,6 @@ def p2wsh_script(address):
        ])
     script_pub_full=bytes([len(script_pub)])+script_pub
     return script_pub_full.hex()
+
 
 

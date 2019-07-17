@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 import datetime
 
-from address_functions import seed_to_master
+from address_functions import seed_to_master, indv_P2SH_pub_key, indv_P2WSH_pub_key
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
@@ -51,7 +51,7 @@ class Ui_Bip39Tool(object):
         self.address_combobox = QtWidgets.QComboBox(Bip39Tool)
         self.address_combobox.setMaximumSize(QtCore.QSize(100, 16777215))
         self.address_combobox.setObjectName("address_combobox")
-        self.address_combobox.addItems(['0','1','2','3','4','5','6','7'])
+        self.address_combobox.addItems(['0','1','2','3','4','5','6','7','8'])
         self.gridLayout.addWidget(self.address_combobox, 20, 4, 1, 1)
         self.address_combobox.activated.connect(address_combo_func)
         self.derivationpath_box = QtWidgets.QLineEdit(Bip39Tool)
@@ -416,12 +416,13 @@ class Ui_Bip39Tool(object):
         self.word5_box.setPlaceholderText(_translate("Bip39Tool", "Word5"))
         self.address_combobox.setItemText(0, _translate("Bip39Tool", "P2PKH"))
         self.address_combobox.setItemText(1, _translate("Bip39Tool", "P2SH"))
-        self.address_combobox.setItemText(2, _translate("Bip39Tool", "P2WPKH"))
-        self.address_combobox.setItemText(3, _translate("Bip39Tool", "P2WSH"))
-        self.address_combobox.setItemText(4, _translate("Bip39Tool", "BIP44"))
-        self.address_combobox.setItemText(5, _translate("Bip39Tool", "BIP49"))
-        self.address_combobox.setItemText(6, _translate("Bip39Tool", "BIP84"))
-        self.address_combobox.setItemText(7, _translate("Bip39Tool", "BIP141"))
+        self.address_combobox.setItemText(2, _translate("Bip39Tool", "P2WPKH-P2SH"))
+        self.address_combobox.setItemText(3, _translate("Bip39Tool", "P2WPKH"))
+        self.address_combobox.setItemText(4, _translate("Bip39Tool", "P2WSH"))
+        self.address_combobox.setItemText(5, _translate("Bip39Tool", "BIP44"))
+        self.address_combobox.setItemText(6, _translate("Bip39Tool", "BIP49"))
+        self.address_combobox.setItemText(7, _translate("Bip39Tool", "BIP84"))
+        self.address_combobox.setItemText(8, _translate("Bip39Tool", "BIP141"))
         self.derivationpath_box.setPlaceholderText(_translate("Bip39Tool", "m/0 etc..."))
         self.word21_box.setPlaceholderText(_translate("Bip39Tool", "Word21"))
         self.word18_box.setPlaceholderText(_translate("Bip39Tool", "Word18"))
@@ -488,7 +489,8 @@ def path_derivation_func(path_string):
     return result
 
 def address_combo_func(data):
-    address_data=['p2pkh','p2sh','p2wpkh','p2wsh','bip44','bip49', 'bip84', 'bip141']
+    # address_data=['p2pkh','p2sh','p2wpkh','p2wsh','bip44','bip49', 'bip84', 'bip141']
+    address_data=['p2pkh','p2sh','p2wpkh-p2sh','p2wpkh','p2wsh','bip44','bip49', 'bip84', 'bip141']
     selection=address_data[data]
     if selection=='bip44':
         ui.derivationpath_box.setDisabled(True)
@@ -562,6 +564,15 @@ def num_words_func(data):
     
 
 def seed_button():
+        # if multisig_checkbox.isChecked()== True:
+        #     return create_multisig(ui.numaddress_spinbox.value())
+        # else: 
+    if ui.textfile_CheckBox.isChecked()== True:
+        create_multisig(ui.numaddress_spinbox.value())
+
+
+    else:
+
         words=[ui.word1_box.text(),ui.word2_box.text(),ui.word3_box.text(),ui.word4_box.text(),
         ui.word5_box.text(),ui.word6_box.text(),ui.word7_box.text(),ui.word8_box.text(),
         ui.word9_box.text(),ui.word10_box.text(),ui.word11_box.text(),ui.word12_box.text(),
@@ -586,6 +597,7 @@ def seed_button():
             hardened_items.append(True)
         else:
             hardened_items.append(False)
+        
         if address_type=='bip44':
             address_type='p2pkh'
             hardened_items = [False, True, True, True, False, False]
@@ -601,6 +613,7 @@ def seed_button():
         elif address_type=='bip141':
             address_type='p2sh' 
             hardened_items[-1]=False
+
         result=seed_to_master(seed, passphrase, derivation_path, 
             hardened_items, total_addresses, address_type, testnet)
         result_data=''
@@ -622,6 +635,50 @@ def seed_button():
                 wallet.writelines([key_data[234:],'\n','\n'])
             wallet.close() 
         return result
+
+
+msig_opcodes=[0, '51', '52', '53', '54' , '55', '56', '57', '58', '59', '5a', '5b', '5c', '5d', '5e', '5f', '60']
+
+def create_multisig(sig_total):
+    pubkeys=[ui.word1_box.text(),ui.word2_box.text(),ui.word3_box.text(),ui.word4_box.text(),
+    ui.word5_box.text(),ui.word6_box.text(),ui.word7_box.text(),ui.word8_box.text(),
+    ui.word9_box.text(),ui.word10_box.text(),ui.word11_box.text(),ui.word12_box.text(),
+    ui.word13_box.text(),ui.word14_box.text(),ui.word15_box.text(),ui.word16_box.text(),
+    ui.word17_box.text(),ui.word18_box.text(),ui.word19_box.text(),ui.word20_box.text(),
+    ui.word21_box.text(),ui.word22_box.text(),ui.word23_box.text(),ui.word24_box.text()]
+    # input_pubkeys=[(item) for item in pubkeys if item is not ""]
+    input_pubkeys=[(bytes.fromhex(item)) for item in pubkeys if item is not ""]
+    pubkeylist=[(bytes([len(item)])+item).hex() for item in input_pubkeys]
+    # pubkeylist=[(bytes([len(item)])+bytes.fromhex(item)).hex() for item in input_pubkeys]
+    print('PKL',pubkeylist)
+    total_pubs=len(pubkeylist)
+    if total_pubs > 16:
+        ui.output_textbrowser.setText('Maximum of 16 public keys allowed ')
+        return
+    elif sig_total > total_pubs:
+        ui.output_textbrowser.setText('Total Signatures Required must not be more than Total Signatures')
+        return
+
+    pubkey_string=" ".join(pubkeylist)
+    redeemscript_pre=bytes.fromhex(msig_opcodes[sig_total]+pubkey_string+msig_opcodes[total_pubs]+'ae')
+    redeemscript=bytes([len(redeemscript_pre)])+redeemscript_pre
+    print('MULTISIG REDEEMSCRIPT', redeemscript.hex())
+    if ui.address_combobox.currentIndex()==1:
+        address=indv_P2SH_pub_key(redeemscript_pre)
+
+    elif ui.address_combobox.currentIndex()==4 :
+        address=indv_P2WSH_pub_key(redeemscript_pre)
+
+    else:
+        ui.output_textbrowser.setText('Select either P2SH or P2WSH address type')
+        return
+    print('ADDRESS- CONFIRM THIS', address)
+    result_text='REDEEMSCRIPT='+redeemscript.hex()+'\n'+'\n'+'ADDRESS='+address
+    ui.output_textbrowser.setText(result_text)
+
+    return redeemscript.hex()
+
+
 
 
 if __name__ == "__main__":
