@@ -564,77 +564,76 @@ def num_words_func(data):
     
 
 def seed_button():
-        # if multisig_checkbox.isChecked()== True:
-        #     return create_multisig(ui.numaddress_spinbox.value())
-        # else: 
-    if ui.textfile_CheckBox.isChecked()== True:
-        create_multisig(ui.numaddress_spinbox.value())
+
+    # if ui.textfile_CheckBox.isChecked()== True:
+    #     create_multisig(ui.numaddress_spinbox.value())
+    #     pass
 
 
+    # else:
+
+    words=[ui.word1_box.text(),ui.word2_box.text(),ui.word3_box.text(),ui.word4_box.text(),
+    ui.word5_box.text(),ui.word6_box.text(),ui.word7_box.text(),ui.word8_box.text(),
+    ui.word9_box.text(),ui.word10_box.text(),ui.word11_box.text(),ui.word12_box.text(),
+    ui.word13_box.text(),ui.word14_box.text(),ui.word15_box.text(),ui.word16_box.text(),
+    ui.word17_box.text(),ui.word18_box.text(),ui.word19_box.text(),ui.word20_box.text(),
+    ui.word21_box.text(),ui.word22_box.text(),ui.word23_box.text(),ui.word24_box.text()]
+    words_list=[(item) for item in words if item is not ""]
+    seed=" ".join(words_list)
+    passphrase=ui.bip39pass_box.text()
+    derivation_path_data=path_derivation_func(ui.derivationpath_box.text())
+    try:
+        derivation_path=derivation_path_data[0]
+    except TypeError:
+        return
+    hardened_items=derivation_path_data[1]
+    if hardened_items is not type(list):
+        hardened_items=[item for item in hardened_items]
+    total_addresses=ui.numaddress_spinbox.value()
+    address_type=address_combo_func(ui.address_combobox.currentIndex())
+    testnet=ui.testnet_checkbox.isChecked()
+    if ui.hardened_checkbox.isChecked()== True:
+        hardened_items.append(True)
     else:
+        hardened_items.append(False)
+    
+    if address_type=='bip44':
+        address_type='p2pkh'
+        hardened_items = [False, True, True, True, False, False]
+        derivation_path = [44, 0, 0, 0, ]
+    elif address_type=='bip49':
+        address_type='p2sh'
+        hardened_items = [False, True, True, True, False, False]
+        derivation_path = [49, 0, 0, 0, ]
+    elif address_type=='bip84':
+        address_type='p2wpkh'
+        hardened_items = [False, True, True, True, False, False]
+        derivation_path = [84, 0, 0, 0, ]
+    elif address_type=='bip141':
+        address_type='p2sh' 
+        hardened_items[-1]=False
 
-        words=[ui.word1_box.text(),ui.word2_box.text(),ui.word3_box.text(),ui.word4_box.text(),
-        ui.word5_box.text(),ui.word6_box.text(),ui.word7_box.text(),ui.word8_box.text(),
-        ui.word9_box.text(),ui.word10_box.text(),ui.word11_box.text(),ui.word12_box.text(),
-        ui.word13_box.text(),ui.word14_box.text(),ui.word15_box.text(),ui.word16_box.text(),
-        ui.word17_box.text(),ui.word18_box.text(),ui.word19_box.text(),ui.word20_box.text(),
-        ui.word21_box.text(),ui.word22_box.text(),ui.word23_box.text(),ui.word24_box.text()]
-        words_list=[(item) for item in words if item is not ""]
-        seed=" ".join(words_list)
-        passphrase=ui.bip39pass_box.text()
-        derivation_path_data=path_derivation_func(ui.derivationpath_box.text())
-        try:
-            derivation_path=derivation_path_data[0]
-        except TypeError:
-            return
-        hardened_items=derivation_path_data[1]
-        if hardened_items is not type(list):
-            hardened_items=[item for item in hardened_items]
-        total_addresses=ui.numaddress_spinbox.value()
-        address_type=address_combo_func(ui.address_combobox.currentIndex())
-        testnet=ui.testnet_checkbox.isChecked()
-        if ui.hardened_checkbox.isChecked()== True:
-            hardened_items.append(True)
-        else:
-            hardened_items.append(False)
-        
-        if address_type=='bip44':
-            address_type='p2pkh'
-            hardened_items = [False, True, True, True, False, False]
-            derivation_path = [44, 0, 0, 0, ]
-        elif address_type=='bip49':
-            address_type='p2sh'
-            hardened_items = [False, True, True, True, False, False]
-            derivation_path = [49, 0, 0, 0, ]
-        elif address_type=='bip84':
-            address_type='p2wpkh'
-            hardened_items = [False, True, True, True, False, False]
-            derivation_path = [84, 0, 0, 0, ]
-        elif address_type=='bip141':
-            address_type='p2sh' 
-            hardened_items[-1]=False
-
-        result=seed_to_master(seed, passphrase, derivation_path, 
-            hardened_items, total_addresses, address_type, testnet)
-        result_data=''
-        result_data+=(result[0])[:234]
+    result=seed_to_master(seed, passphrase, derivation_path, 
+        hardened_items, total_addresses, address_type, testnet)
+    result_data=''
+    result_data+=(result[0])[:234]
+    result_data+='\n'
+    for key_data in result:
+        result_data+=key_data[234:]
         result_data+='\n'
+        result_data+='\n'
+        ui.output_textbrowser.setText(result_data)
+    if ui.textfile_CheckBox.isChecked()== False:
+        pass
+    else:
+        wallet = open("data.txt","a")
+        wallet.writelines(['\n','**NEW WALLET KEYS ADDED**- ',
+            str(datetime.datetime.now()),'\n',' SEED=',seed, 
+            ' PASSPHRASE=',passphrase,'\n',result_data[:234],'\n','\n'])            
         for key_data in result:
-            result_data+=key_data[234:]
-            result_data+='\n'
-            result_data+='\n'
-            ui.output_textbrowser.setText(result_data)
-        if ui.textfile_CheckBox.isChecked()== False:
-            pass
-        else:
-            wallet = open("data.txt","a")
-            wallet.writelines(['\n','**NEW WALLET KEYS ADDED**- ',
-                str(datetime.datetime.now()),'\n',' SEED=',seed, 
-                ' PASSPHRASE=',passphrase,'\n',result_data[:234],'\n','\n'])            
-            for key_data in result:
-                wallet.writelines([key_data[234:],'\n','\n'])
-            wallet.close() 
-        return result
+            wallet.writelines([key_data[234:],'\n','\n'])
+        wallet.close() 
+    return result
 
 
 msig_opcodes=[0, '51', '52', '53', '54' , '55', '56', '57', '58', '59', '5a', '5b', '5c', '5d', '5e', '5f', '60']
@@ -646,11 +645,8 @@ def create_multisig(sig_total):
     ui.word13_box.text(),ui.word14_box.text(),ui.word15_box.text(),ui.word16_box.text(),
     ui.word17_box.text(),ui.word18_box.text(),ui.word19_box.text(),ui.word20_box.text(),
     ui.word21_box.text(),ui.word22_box.text(),ui.word23_box.text(),ui.word24_box.text()]
-    # input_pubkeys=[(item) for item in pubkeys if item is not ""]
     input_pubkeys=[(bytes.fromhex(item)) for item in pubkeys if item is not ""]
     pubkeylist=[(bytes([len(item)])+item).hex() for item in input_pubkeys]
-    # pubkeylist=[(bytes([len(item)])+bytes.fromhex(item)).hex() for item in input_pubkeys]
-    print('PKL',pubkeylist)
     total_pubs=len(pubkeylist)
     if total_pubs > 16:
         ui.output_textbrowser.setText('Maximum of 16 public keys allowed ')
@@ -662,17 +658,15 @@ def create_multisig(sig_total):
     pubkey_string=" ".join(pubkeylist)
     redeemscript_pre=bytes.fromhex(msig_opcodes[sig_total]+pubkey_string+msig_opcodes[total_pubs]+'ae')
     redeemscript=bytes([len(redeemscript_pre)])+redeemscript_pre
-    print('MULTISIG REDEEMSCRIPT', redeemscript.hex())
     if ui.address_combobox.currentIndex()==1:
-        address=indv_P2SH_pub_key(redeemscript_pre)
+        address=indv_P2SH_pub_key(redeemscript_pre, ui.testnet_checkbox.isChecked())
 
     elif ui.address_combobox.currentIndex()==4 :
-        address=indv_P2WSH_pub_key(redeemscript_pre)
+        address=indv_P2WSH_pub_key(redeemscript_pre, ui.testnet_checkbox.isChecked())
 
     else:
         ui.output_textbrowser.setText('Select either P2SH or P2WSH address type')
         return
-    print('ADDRESS- CONFIRM THIS', address)
     result_text='REDEEMSCRIPT='+redeemscript.hex()+'\n'+'\n'+'ADDRESS='+address
     ui.output_textbrowser.setText(result_text)
 

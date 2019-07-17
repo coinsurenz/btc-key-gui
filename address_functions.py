@@ -146,8 +146,11 @@ def path_gen_keylist(master_cc, master_pk,master_pubkey, index_list, hardened_li
 			script_pub=p2wpkh_script(index_key_data.pubkey())
 		
 		elif address_type=='p2wsh':
-			public=indv_P2WSH_pub_key(index_key_data.pubkey(), testnet)
+			redeemscript=pw2sh_redeemscript(index_key_data.pubkey())
+			# public=indv_P2WSH_pub_key(index_key_data.pubkey(), testnet)
+			public=indv_P2WSH_pub_key(redeemscript, testnet)
 			script_pub=p2wsh_script(index_key_data.pubkey())
+			p2sh_signscript=(bytes([len(redeemscript)])+redeemscript).hex()
 		index_items=[str(item) for item in index_list]
 		counter=1
 		for item in hardened_list[1:]:
@@ -159,7 +162,7 @@ def path_gen_keylist(master_cc, master_pk,master_pubkey, index_list, hardened_li
 				index_items.insert(counter, "/")
 				counter+=2
 		derivation_path_text="m/"+ "".join(index_items[:-1])	
-		script_to_sign_results=['p2sh', 'p2wpkh-p2sh']		
+		script_to_sign_results=['p2sh', 'p2wpkh-p2sh', 'p2wsh']		
 		if address_type in script_to_sign_results:
 			result_text= 'XPRV='+str(xprv, 'utf-8')+'\n''XPUB='+str(xpub, 'utf-8')+'\n'+'DERIVATION PATH='+str(derivation_path_text)+ " -KEY INDEX="+str(key_index)+' HARDENED ADDRESS='+str(hardened_list[-1:])+'\n'+'privatekey='+str(path_private, 'utf-8')+'\n'+'Private hex='+privatehex+'\n'+'Private scalar='+str(string_to_int(index_key_data.CKDpriv()))+'\n'+'publickey='+public+'\n'+'public point='+str(codecs.encode(path_pubkey,'hex'), 'utf-8')+'\n'+'Script Pubkey='+script_pub+'\n'+'P2SH Script to sign='+p2sh_signscript+'\n'#
 		else:
@@ -356,6 +359,8 @@ def p2wpkh_script(address):
     script_pub_full=bytes([len(script_pub)])+script_pub
     return script_pub_full.hex()
 
+
+#do I need this- can I remove it?
 def p2wsh_script(address):
     witnessscript=bytes([len(address)])+address+OP_CHECKSIG
     witnessprog=hashlib.sha256(witnessscript).digest()  
@@ -366,6 +371,19 @@ def p2wsh_script(address):
        ])
     script_pub_full=bytes([len(script_pub)])+script_pub
     return script_pub_full.hex()
+
+#can I just use p2sh version?
+def pw2sh_redeemscript(pubkey):
+    # redeemscript_full= b''.join([
+    tx_redeemscript= b''.join([
+        bytes([len(pubkey)]),
+        pubkey,
+        OP_CHECKSIG,
+        ])
+    # redeemscript_full2=bytes([len(redeemscript_full)])+redeemscript_full
+    # tx_redeemscript=redeemscript_full.hex()
+    print('TX REDM SCR-ADD THIS TO PRINT',tx_redeemscript.hex())
+    return tx_redeemscript 
 
 
 
