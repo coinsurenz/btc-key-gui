@@ -352,8 +352,8 @@ def convertbits(data, frombits, tobits, pad=True):
 
 def encode_bech32(hrp, witver, witprog):
 	ret = bech32_encode(hrp, [witver] + convertbits(witprog, 8, 5))
-	if decode(hrp, ret) == (None, None):
-	    return None
+	# if decode(hrp, ret) == (None, None):
+	    # return None
 	return ret
 
 def p2pkh_script(address):
