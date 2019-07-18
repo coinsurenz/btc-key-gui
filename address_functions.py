@@ -206,7 +206,7 @@ def path_gen_keylist(master_cc, master_pk,master_pubkey, index_list, hardened_li
 				index_items.insert(counter, "/")
 				counter+=2
 		derivation_path_text="m/"+ "".join(index_items[:-1])	
-		script_to_sign_results=['p2sh', 'p2wpkh-p2sh', 'p2wsh']		
+		script_to_sign_results=['p2sh', 'p2wpkh-p2sh', 'p2wsh', 'p2wpkh']		
 		if address_type in script_to_sign_results:
 			result_text= 'XPRV='+str(xprv, 'utf-8')+'\n''XPUB='+str(xpub, 'utf-8')+'\n'+'DERIVATION PATH='+str(derivation_path_text)+ " -KEY INDEX="+str(key_index)+' HARDENED ADDRESS='+str(hardened_list[-1:])+'\n'+'privatekey='+str(path_private, 'utf-8')+'\n'+'Private hex='+privatehex+'\n'+'Private scalar='+str(string_to_int(index_key_data.CKDpriv()))+'\n'+'publickey='+public+'\n'+'public point='+str(codecs.encode(path_pubkey,'hex'), 'utf-8')+'\n'+'Script Pubkey='+script_pub+'\n'+'Scriptpub to sign='+signscript+'\n'#
 		else:
