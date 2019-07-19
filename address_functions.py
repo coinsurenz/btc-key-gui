@@ -193,7 +193,7 @@ def path_gen_keylist(master_cc, master_pk,master_pubkey, index_list, hardened_li
 		elif address_type=='p2wsh':
 			redeemscript=p2sh_redeemscript(index_key_data.pubkey())
 			public=indv_P2WSH_pub_key(redeemscript, testnet)
-			script_pub=p2wsh_script(index_key_data.pubkey())
+			script_pub=p2sh_script(index_key_data.pubkey())
 			signscript=(bytes([len(redeemscript)])+redeemscript).hex()
 		index_items=[str(item) for item in index_list]
 		counter=1

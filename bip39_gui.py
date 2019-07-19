@@ -540,6 +540,9 @@ def address_combo_func(data):
         ui.derivationpath_box.setText("m/84'/0'/0'/0")
         ui.hardened_checkbox.setDisabled(True)
         ui.hardened_checkbox.setChecked(False)
+    elif selection=='bip141':
+        ui.hardened_checkbox.setDisabled(True)
+        ui.hardened_checkbox.setChecked(False)
     else:
         ui.derivationpath_box.setDisabled(False)
         ui.hardened_checkbox.setDisabled(False)
@@ -685,19 +688,16 @@ def create_multisig(sig_total):
         return
     pubkey_string=" ".join(pubkeylist)
     redeemscript_pre=bytes.fromhex(msig_opcodes[sig_total]+pubkey_string+msig_opcodes[total_pubs]+'ae')
-    # redeemscript=bytes([len(redeemscript_pre)])+redeemscript_pre
     redeemscript=len_in_hex(redeemscript_pre)+redeemscript_pre
     if ui.address_combobox.currentIndex()==1:
         address=indv_P2SH_pub_key(redeemscript_pre, ui.testnet_checkbox.isChecked())
 
     elif ui.address_combobox.currentIndex()==4 :
         address=indv_P2WSH_pub_key(redeemscript_pre, ui.testnet_checkbox.isChecked())
-
     else:
         ui.output_textbrowser.setText('Select either P2SH or P2WSH address type')
         return
     result_text='REDEEMSCRIPT='+redeemscript.hex()+'\n'+'\n'+'ADDRESS='+address
-
     ui.output_textbrowser.setText(result_text)
     return redeemscript.hex()
 
