@@ -677,7 +677,11 @@ def create_multisig(sig_total):
     ui.word13_box.text(),ui.word14_box.text(),ui.word15_box.text(),ui.word16_box.text(),
     ui.word17_box.text(),ui.word18_box.text(),ui.word19_box.text(),ui.word20_box.text(),
     ui.word21_box.text(),ui.word22_box.text(),ui.word23_box.text(),ui.word24_box.text()]
-    input_pubkeys=[(bytes.fromhex(item)) for item in pubkeys if item is not ""]
+    try:
+        input_pubkeys=[(bytes.fromhex(item)) for item in pubkeys if item is not ""]
+    except ValueError:
+        ui.output_textbrowser.setText('Error- Please check multisig field inputs')
+        return
     pubkeylist=[(bytes([len(item)])+item).hex() for item in input_pubkeys]
     total_pubs=len(pubkeylist)
     if total_pubs > 16:
