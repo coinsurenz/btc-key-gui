@@ -18,7 +18,7 @@ Commandline- Clone the repo and run
 "python3 bip39_gui.py"
 
 Windows users-
-Standalone .exe can be found in the executables folder
+Standalone .exe can be found in the releases section
 
 Appimage and standalone app for Mac will be added in the near future
 </pre>
