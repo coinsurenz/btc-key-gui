@@ -601,7 +601,7 @@ def num_words_func(data):
 
 def seed_button():
 
-    if ui.multisig_checkbox.isChecked()== True:
+    if ui.multisig_checkbox.isChecked() is True:
         create_multisig(ui.numaddress_spinbox.value())
     else:
         words=[ui.word1_box.text(),ui.word2_box.text(),ui.word3_box.text(),ui.word4_box.text(),
@@ -610,7 +610,7 @@ def seed_button():
         ui.word13_box.text(),ui.word14_box.text(),ui.word15_box.text(),ui.word16_box.text(),
         ui.word17_box.text(),ui.word18_box.text(),ui.word19_box.text(),ui.word20_box.text(),
         ui.word21_box.text(),ui.word22_box.text(),ui.word23_box.text(),ui.word24_box.text()]
-        words_list=[(item) for item in words if item is not ""]
+        words_list=[(item) for item in words if item != ""]
         seed=" ".join(words_list)
         passphrase=ui.bip39pass_box.text()
         derivation_path_data=path_derivation_func(ui.derivationpath_box.text())
@@ -624,7 +624,7 @@ def seed_button():
         total_addresses=ui.numaddress_spinbox.value()
         address_type=address_combo_func(ui.address_combobox.currentIndex())
         testnet=ui.testnet_checkbox.isChecked()
-        if ui.hardened_checkbox.isChecked()== True:
+        if ui.hardened_checkbox.isChecked() is True:
             hardened_items.append(True)
         else:
             hardened_items.append(False)
@@ -655,7 +655,7 @@ def seed_button():
             result_data+='\n'
             result_data+='\n'
             ui.output_textbrowser.setText(result_data)
-        if ui.textfile_CheckBox.isChecked()== False:
+        if ui.textfile_CheckBox.isChecked() is False:
             pass
         else:
             wallet = open("data.txt","a")
@@ -678,7 +678,7 @@ def create_multisig(sig_total):
     ui.word17_box.text(),ui.word18_box.text(),ui.word19_box.text(),ui.word20_box.text(),
     ui.word21_box.text(),ui.word22_box.text(),ui.word23_box.text(),ui.word24_box.text()]
     try:
-        input_pubkeys=[(bytes.fromhex(item)) for item in pubkeys if item is not ""]
+        input_pubkeys=[(bytes.fromhex(item)) for item in pubkeys if item != ""]
     except ValueError:
         ui.output_textbrowser.setText('Error- Please check multisig field inputs')
         return
@@ -717,5 +717,4 @@ if __name__ == "__main__":
     ui.setupUi(Bip39Tool)
     Bip39Tool.show()
     sys.exit(app.exec_())
-
 

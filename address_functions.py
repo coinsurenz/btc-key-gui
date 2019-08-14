@@ -117,17 +117,17 @@ class Keylevel:
 
 	def xpub(self):
 		if self.address_type == 'p2wpkh-p2sh':
-			if self.testnet== True:
+			if self.testnet:
 				prefix=b'\x04\x4A\x52\x62'
 			else:
 				prefix=b'\x04\x9D\x7C\xB2'
 		elif self.address_type == 'p2wpkh':
-			if self.testnet== True:
+			if self.testnet:
 				prefix=b'\x04\x5F\x1C\xF6'
 			else:
 				prefix=b'\x04\xB2\x47\x46'
 		elif self.address_type == 'p2wsh':
-			if self.testnet== True:
+			if self.testnet:
 				prefix=b'\x02\x42\x89\xEF'
 			else:
 				prefix=b'\x02\xAA\x7E\xD3'
