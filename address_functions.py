@@ -109,8 +109,11 @@ class Keylevel:
 			prefix=b'\x04\x35\x83\x94'
 		else:
 			prefix=b'\x04\x88\xAD\xE4'
-
-		xprvraw=prefix+bytes([self.depth])+self.fingerprint+bytes.fromhex(format(self.index, 'x').rjust(8, '0'))+self.CKCpriv()+b'\x00'+self.CKDpriv()
+		if self.hardened:
+			i= 2147483648+self.index 
+		else:
+			i=self.index
+		xprvraw=prefix+bytes([self.depth])+self.fingerprint+bytes.fromhex(format(i, 'x').rjust(8, '0'))+self.CKCpriv()+b'\x00'+self.CKDpriv()
 		checksum = hash256(xprvraw)[:4]
 		xprvfull=xprvraw+checksum
 		return encode_base58(xprvfull)
@@ -135,8 +138,11 @@ class Keylevel:
 			prefix=b'\x04\x35\x87\xCF'
 		else:
 			prefix=b'\x04\x88\xB2\x1E'
-
-		xpubraw=prefix+bytes([self.depth])+self.fingerprint+bytes.fromhex(format(self.index, 'x').rjust(8, '0'))+self.CKCpriv()+self.pubkey()
+		if self.hardened:
+			i= 2147483648+self.index 
+		else:
+			i=self.index
+		xpubraw=prefix+bytes([self.depth])+self.fingerprint+bytes.fromhex(format(i, 'x').rjust(8, '0'))+self.CKCpriv()+self.pubkey()
 		checksum= hash256(xpubraw)[:4]
 		xpubfull=xpubraw+checksum
 		return encode_base58(xpubfull)
@@ -159,6 +165,7 @@ def path_gen_keylist(master_cc, master_pk,master_pubkey, index_list, hardened_li
 		depth+=1
 		gen_fp=Keylevel(inputs[0], inputs[1], inputs[2], int(index_str),hardened_list[depth], depth, inputs[3], address_type, testnet)
 		inputs[3]=gen_fp.fprint()
+
 	key_index=0
 	key_result=[]
 	for key in range(0, total_keys):
