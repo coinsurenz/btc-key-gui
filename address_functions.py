@@ -128,7 +128,7 @@ class Keylevel:
 				prefix=b'\x04\xB2\x47\x46'
 		elif self.address_type == 'p2wsh':
 			if self.testnet:
-				prefix=b'\x02\x42\x89\xEF'
+				prefix=b'\x02\x57\x54\x83'
 			else:
 				prefix=b'\x02\xAA\x7E\xD3'
 		elif self.testnet:
