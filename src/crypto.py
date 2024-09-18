@@ -28,5 +28,6 @@ def hash160(secret):
     """
     return hashlib.new("ripemd160", hashlib.sha256(secret).digest()).digest()
 
+
 def create_checksum(data: bytes) -> bytes:
     return hash256(data)[:4]

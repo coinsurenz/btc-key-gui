@@ -12,6 +12,7 @@ from .encoding import encode_base58
 from .crypto import hash160, hash256
 from .address import convert_pubkey_to_pubdata, indv_priv_key
 
+
 def seed_to_master(
     seed: str,
     passphrase: str,
@@ -19,7 +20,7 @@ def seed_to_master(
     hardened_items: List[bool],
     total_addresses: int,
     address_type: str,
-    testnet: bool
+    testnet: bool,
 ) -> List[str]:
     """
     Generate master keys and derive child keys based on the given seed and parameters.
@@ -36,19 +37,10 @@ def seed_to_master(
     Returns:
         List[str]: List of derived key information.
     """
-    # Generate the seed
     seed_bytes = generate_seed(seed, passphrase)
-
-    # Derive master keys
     master_pk, master_cc = derive_master_keys(seed_bytes)
-
-    # Generate master public key
     master_pubkey = generate_master_pubkey(master_pk)
 
-    print('derivation_path', derivation_path)
-    print('hardened_items', hardened_items)
-    print('total_addresses', total_addresses)
-    # Generate key list
     return path_gen_keylist(
         master_cc,
         master_pk,
@@ -60,6 +52,7 @@ def seed_to_master(
         testnet,
     )
 
+
 def generate_seed(seed: str, passphrase: str) -> bytes:
     """Generate a seed using PBKDF2."""
     return PBKDF2(
@@ -70,6 +63,7 @@ def generate_seed(seed: str, passphrase: str) -> bytes:
         digestmodule=hashlib.sha512,
     ).read(64)
 
+
 def derive_master_keys(seed_bytes: bytes) -> Tuple[bytes, bytes]:
     """Derive master private key and chain code."""
     hmac_hash = hmac.new(
@@ -78,6 +72,7 @@ def derive_master_keys(seed_bytes: bytes) -> Tuple[bytes, bytes]:
         digestmod=hashlib.sha512,
     ).digest()
     return hmac_hash[:32], hmac_hash[32:]
+
 
 def generate_master_pubkey(master_pk: bytes) -> bytes:
     """Generate master public key."""
@@ -149,9 +144,7 @@ class Keylevel:
         i_bytes = struct.pack(">I", i & 0xFFFFFFFF)
         hmac_data = data + i_bytes
         child_key_hmac = hmac.new(
-            key=self.chaincode,
-            msg=hmac_data,
-            digestmod=hashlib.sha512
+            key=self.chaincode, msg=hmac_data, digestmod=hashlib.sha512
         ).digest()
 
         return child_key_hmac[:32], child_key_hmac[32:]
@@ -167,7 +160,7 @@ class Keylevel:
         child_key_int = string_to_int(child_key)
         master_key_int = string_to_int(self.priv_key)
         new_key = (child_key_int + master_key_int) % CURVE_ORDER
-        return int_to_string(new_key).rjust(32, b'\x00')
+        return int_to_string(new_key).rjust(32, b"\x00")
 
     def CKCpriv(self) -> bytes:
         """
@@ -222,12 +215,9 @@ class Keylevel:
             (AddressType.P2WSH, False, True): b"\x02\x57\x54\x83",
             (AddressType.P2WSH, False, False): b"\x02\xAA\x7E\xD3",
         }
-        default_private = b"\x04\x35\x83\x94" if self.testnet else b"\x04\x88\xAD\xE4" # TODO do we want these defaults?
-        default_public = b"\x04\x35\x87\xCF" if self.testnet else b"\x04\x88\xB2\x1E"
 
         return version_bytes.get(
             (self.address_type, is_private, self.testnet),
-            default_private if is_private else default_public
         )
 
     def _serialize_extended_key(self, is_private: bool) -> bytes:
@@ -245,27 +235,18 @@ class Keylevel:
         depth = bytes([self.depth])
         index = i.to_bytes(4, byteorder="big")
         chaincode = self.CKCpriv()
-        fingerprint = self.fprint() # was self.fingerprint
+        fingerprint = self.fprint()  # was self.fingerprint
         key_data = b"\x00" + self.CKDpriv() if is_private else self.pubkey()
-        print('version', len(version))
-        print('depth', len(depth))
+        return version + depth + fingerprint + index + chaincode + key_data
 
-        print('fingerprint', len(self.fingerprint), self.fingerprint.hex())
-        print('index', len(index), index.hex())
-        print('chaincode', len(chaincode), chaincode.hex())
-        print('key_data', len(key_data))
-        return (
-            version + depth + fingerprint + index + chaincode + key_data
-        )
-
-    def xprv(self) -> str: # TODO can use _get_version_bytes ?
+    def xprv(self) -> str:  # TODO can use _get_version_bytes ?
         """
         Generate the extended private key.
 
         Returns:
             str: The base58-encoded extended private key.
         """
-        print('$$$$$testnet', self.testnet)
+        print("$$$$$testnet", self.testnet)
         if self.address_type == "p2wpkh-p2sh":
             if self.testnet:
                 prefix = b"\x04\x4A\x4E\x28"
@@ -302,8 +283,7 @@ class Keylevel:
         xprvfull = xprvraw + checksum
         return encode_base58(xprvfull)
 
-
-    def xpub(self) -> str: # TODO can use _get_version_bytes ?
+    def xpub(self) -> str:  # TODO can use _get_version_bytes ?
         """
         Generate the extended public key.
 
@@ -345,7 +325,7 @@ class Keylevel:
         xpubfull = xpubraw + checksum
         return encode_base58(xpubfull)
 
-# # TODO- break out and refactor -- is same as in other file?
+
 def path_gen_keylist(
     master_cc,
     master_pk,
@@ -380,48 +360,84 @@ def path_gen_keylist(
     input_pk = master_pk
     input_pub = master_pubkey
     input_fp = b"\x00\x00\x00\x00"
-    xprv = ""
-    xpub = ""
+    xprv = b""
+    xpub = b""
+    account_extended_private_key = b""
+    account_extended_public_key = b""
 
     hardened_list.insert(0, False)
     for index_str in derivation_path:
         is_hardened = hardened_list[depth]
         index_as_int = int(index_str)
-        master_key_data = Keylevel(input_cc, input_pk,input_pub, index_as_int, is_hardened, depth, input_fp, address_type, is_testnet)
+        master_key_data = Keylevel(
+            input_cc,
+            input_pk,
+            input_pub,
+            index_as_int,
+            is_hardened,
+            depth,
+            input_fp,
+            address_type,
+            is_testnet,
+        )
         input_cc = master_key_data.CKCpriv()
         input_pk = master_key_data.CKDpriv()
         input_pub = master_key_data.pubkey()
         input_fp = master_key_data.fprint()
-        old_vpriv = xprv # TODO rename
-        old_vpub = xpub #rename
+        account_extended_private_key = xprv
+        account_extended_public_key = xpub
         xprv = master_key_data.xprv()
         xpub = master_key_data.xpub()
-        # print('old_vpriv- how to store and display', old_vpriv)
-        # print('old_vpub- how to store and display', old_vpub)
         depth += 1
 
-        gen_fp = Keylevel(input_cc, input_pk,input_pub, index_as_int, is_hardened, depth, input_fp, address_type, is_testnet)
+        gen_fp = Keylevel(
+            input_cc,
+            input_pk,
+            input_pub,
+            index_as_int,
+            is_hardened,
+            depth,
+            input_fp,
+            address_type,
+            is_testnet,
+        )
         input_fp = gen_fp.fprint()
 
     key_index = 0
     key_result = []
 
-
     for key in range(total_keys):
-        is_derived_key_hardened = hardened_list[depth-1]
-        index_key_data = Keylevel(input_cc, input_pk,input_pub, key, is_derived_key_hardened, depth, input_fp, address_type, is_testnet)
+        is_derived_key_hardened = hardened_list[depth - 1]
+        index_key_data = Keylevel(
+            input_cc,
+            input_pk,
+            input_pub,
+            key,
+            is_derived_key_hardened,
+            depth,
+            input_fp,
+            address_type,
+            is_testnet,
+        )
+
         path_pubkey = index_key_data.pubkey()
         path_private = indv_priv_key(index_key_data.CKDpriv(), is_testnet)
         privatehex = index_key_data.CKDpriv().hex()
 
-        public, script_pub, signscript = convert_pubkey_to_pubdata(path_pubkey, is_testnet, address_type)
+        public, script_pub, signscript = convert_pubkey_to_pubdata(
+            path_pubkey, is_testnet, address_type
+        )
 
-        derivation_path_text = "m/" + "/".join(f"{item}{'h' if hardened else ''}" for item, hardened in zip(derivation_path, hardened_list[1:]))
+        derivation_path_text = "m/" + "/".join(
+            f"{item}{'h' if hardened else ''}"
+            for item, hardened in zip(derivation_path, hardened_list[1:])
+        )
         script_to_sign_results = ["p2sh", "p2wpkh-p2sh", "p2wsh", "p2wpkh"]
-
         common_text = (
-            f"XPRV={xprv.decode('utf-8')}\n"
-            f"XPUB={xpub.decode('utf-8')}\n"
+            f"ACCOUNT EXTENDED PRV KEY={account_extended_private_key.decode('utf-8')}\n"
+            f"ACCOUNT EXTENDED PUB KEY={account_extended_public_key.decode('utf-8')}\n"
+            f"BIP32 XPRV={xprv.decode('utf-8')}\n"
+            f"BIP32 XPUB={xpub.decode('utf-8')}\n"
             f"DERIVATION PATH={derivation_path_text} -KEY INDEX={key_index} HARDENED ADDRESS={hardened_list[-1:]}\n"
             f"privatekey={path_private.decode('utf-8')}\n"
             f"Private hex={privatehex}\n"
@@ -431,7 +447,11 @@ def path_gen_keylist(
             f"Script Pubkey={script_pub}\n"
         )
 
-        result_text = common_text + (f"Scriptpub to sign={signscript}\n" if address_type in script_to_sign_results else "")
+        result_text = common_text + (
+            f"Scriptpub to sign={signscript}\n"
+            if address_type in script_to_sign_results
+            else ""
+        )
         key_index += 1
         key_result.append(result_text)
     return key_result

@@ -1,4 +1,5 @@
 """Address related functions"""
+
 import hashlib
 from .constants import NetworkType, AddressPrefix, OpCode
 from .crypto import create_checksum, hash160
@@ -19,11 +20,31 @@ def convert_pubkey_to_pubdata(pubkey, testnet, address_type):
                The contents vary based on the address_type.
     """
     address_functions = {
-        "p2pkh": lambda: (indv_P2PKH_pub_key(pubkey, testnet), p2pkh_script(pubkey), None),
-        "p2sh": lambda: (indv_P2SH_pub_key(redeemscript := p2sh_redeemscript(pubkey), testnet), p2sh_script(redeemscript), (bytes([len(redeemscript)]) + redeemscript).hex()),
-        "p2wpkh-p2sh": lambda: (indv_P2WPKH_P2SH_pub_key(pubkey, testnet), p2sh_script(pubkey), "1976a9" + p2wpkh_p2sh_redeemscript(pubkey)[6:] + "88ac"),
-        "p2wpkh": lambda: (indv_P2WPKH_pub_key(pubkey, testnet), script_pub := p2wpkh_script(pubkey), "1976a9" + script_pub[4:] + "88ac"),
-        "p2wsh": lambda: (indv_P2WSH_pub_key(redeemscript := p2sh_redeemscript(pubkey), testnet), p2sh_script(pubkey), (bytes([len(redeemscript)]) + redeemscript).hex()),
+        "p2pkh": lambda: (
+            indv_P2PKH_pub_key(pubkey, testnet),
+            p2pkh_script(pubkey),
+            None,
+        ),
+        "p2sh": lambda: (
+            indv_P2SH_pub_key(redeemscript := p2sh_redeemscript(pubkey), testnet),
+            p2sh_script(redeemscript),
+            (bytes([len(redeemscript)]) + redeemscript).hex(),
+        ),
+        "p2wpkh-p2sh": lambda: (
+            indv_P2WPKH_P2SH_pub_key(pubkey, testnet),
+            p2sh_script(pubkey),
+            "1976a9" + p2wpkh_p2sh_redeemscript(pubkey)[6:] + "88ac",
+        ),
+        "p2wpkh": lambda: (
+            indv_P2WPKH_pub_key(pubkey, testnet),
+            script_pub := p2wpkh_script(pubkey),
+            "1976a9" + script_pub[4:] + "88ac",
+        ),
+        "p2wsh": lambda: (
+            indv_P2WSH_pub_key(redeemscript := p2sh_redeemscript(pubkey), testnet),
+            p2sh_script(pubkey),
+            (bytes([len(redeemscript)]) + redeemscript).hex(),
+        ),
     }
     return address_functions[address_type]()
 
@@ -47,7 +68,9 @@ def get_address_prefix(address_type: str, network: NetworkType) -> bytes:
         ("wif", NetworkType.TESTNET.value): AddressPrefix.WIF_TESTNET.value,
         ("wif", NetworkType.MAINNET.value): AddressPrefix.WIF_MAINNET.value,
     }
-    return prefix_map.get((address_type, network), b"")# TODO - need a default value here or no
+    return prefix_map.get(
+        (address_type, network)
+    )
 
 
 def create_address(prefix: bytes, data: bytes) -> str:
@@ -65,28 +88,34 @@ def create_address(prefix: bytes, data: bytes) -> str:
     checksum = create_checksum(raw)
     return encode_base58(raw + checksum)
 
-def indv_priv_key(secret: bytes, network: NetworkType = NetworkType.TESTNET.value) -> str:
+
+def indv_priv_key(
+    secret: bytes, network: NetworkType = NetworkType.TESTNET.value
+) -> str:
     """
     Generate a Wallet Import Format (WIF) private key.
-    
+
     Args:
         secret (bytes): The private key secret.
         network (NetworkType): The network type (testnet or mainnet).
-    
+
     Returns:
         str: The WIF private key.
     """
     prefix = get_address_prefix("wif", network)
     return create_address(prefix, secret + b"\x01")
 
-def indv_P2PKH_pub_key(pubkey: bytes, network: NetworkType = NetworkType.TESTNET.value) -> str:
+
+def indv_P2PKH_pub_key(
+    pubkey: bytes, network: NetworkType = NetworkType.TESTNET.value
+) -> str:
     """
     Generate a Pay-to-Public-Key-Hash (P2PKH) address.
-    
+
     Args:
         pubkey (bytes): The public key.
         network (NetworkType): The network type (testnet or mainnet).
-    
+
     Returns:
         str: The P2PKH address.
     """
@@ -94,14 +123,17 @@ def indv_P2PKH_pub_key(pubkey: bytes, network: NetworkType = NetworkType.TESTNET
     addr = create_address(prefix, hash160(pubkey))
     return str(addr, "utf-8")
 
-def indv_P2WPKH_P2SH_pub_key(pubkey: bytes, network: NetworkType = NetworkType.TESTNET.value) -> str:
+
+def indv_P2WPKH_P2SH_pub_key(
+    pubkey: bytes, network: NetworkType = NetworkType.TESTNET.value
+) -> str:
     """
     Generate a Pay-to-Witness-Public-Key-Hash nested in Pay-to-Script-Hash (P2WPKH-P2SH) address.
-    
+
     Args:
         pubkey (bytes): The public key.
         network (NetworkType): The network type (testnet or mainnet).
-    
+
     Returns:
         str: The P2WPKH-P2SH address.
     """
@@ -110,7 +142,10 @@ def indv_P2WPKH_P2SH_pub_key(pubkey: bytes, network: NetworkType = NetworkType.T
     addr = create_address(prefix, redeemscript)
     return str(addr, "utf-8")
 
-def indv_P2SH_pub_key(pubkey: bytes, network: NetworkType = NetworkType.TESTNET.value) -> str:
+
+def indv_P2SH_pub_key(
+    pubkey: bytes, network: NetworkType = NetworkType.TESTNET.value
+) -> str:
     """
     Generate a Pay-to-Script-Hash (P2SH) address.
 
@@ -121,12 +156,15 @@ def indv_P2SH_pub_key(pubkey: bytes, network: NetworkType = NetworkType.TESTNET.
     Returns:
         str: The P2SH address.
     """
-    print('pubkey indv_P2SH_pub_key input bytes', pubkey.hex())
+    print("pubkey indv_P2SH_pub_key input bytes", pubkey.hex())
     prefix = get_address_prefix("p2sh", network)
     addr = create_address(prefix, hash160(pubkey))
     return str(addr, "utf-8")
 
-def indv_P2WPKH_pub_key(pubkey: bytes, network: NetworkType = NetworkType.TESTNET.value) -> str:
+
+def indv_P2WPKH_pub_key(
+    pubkey: bytes, network: NetworkType = NetworkType.TESTNET.value
+) -> str:
     """
     Generate a Pay-to-Witness-Public-Key-Hash (P2WPKH) address.
 
@@ -141,7 +179,10 @@ def indv_P2WPKH_pub_key(pubkey: bytes, network: NetworkType = NetworkType.TESTNE
     hrp = "tb" if network == NetworkType.TESTNET.value else "bc"
     return encode_bech32(hrp, 0, h160)
 
-def indv_P2WSH_pub_key(pubkey: bytes, network: NetworkType = NetworkType.TESTNET.value) -> str:
+
+def indv_P2WSH_pub_key(
+    pubkey: bytes, network: NetworkType = NetworkType.TESTNET.value
+) -> str:
     """
     Generate a Pay-to-Witness-Script-Hash (P2WSH) address.
 
@@ -152,11 +193,10 @@ def indv_P2WSH_pub_key(pubkey: bytes, network: NetworkType = NetworkType.TESTNET
     Returns:
         str: The P2WSH address.
     """
-    print('pubkey indv_P2WSH_pub_key input bytes', pubkey.hex())
+    print("pubkey indv_P2WSH_pub_key input bytes", pubkey.hex())
     witnessprog = hashlib.sha256(pubkey).digest()
     hrp = "tb" if network == NetworkType.TESTNET.value else "bc"
     return encode_bech32(hrp, 0, witnessprog)
-
 
 
 def p2wpkh_p2sh_redeemscript(pubkey):
@@ -184,7 +224,6 @@ def p2wpkh_p2sh_redeemscript(pubkey):
         '220014751e76e8199196d454941c45d1b3a323f1433bd6'
     """
     h160 = hash160(pubkey)
-    # redeemscript_hash = hash160(OpCode.OP_0.value + bytes([len(h160)]) + h160) // TODO- can we just delete this?
     redeemscript_raw = OpCode.OP_0.value + bytes([len(h160)]) + h160
     redeemscript_full = bytes([len(redeemscript_raw)]) + redeemscript_raw
     redeemscript_plus_len = bytes([len(redeemscript_full)]) + redeemscript_full
@@ -225,81 +264,70 @@ def p2sh_redeemscript(pubkey):
     return tx_redeemscript
 
 
-
-def get_address_prefix(address_type: str, network: NetworkType) -> bytes:
-    prefix_map = {
-        ("p2pkh", NetworkType.TESTNET.value): AddressPrefix.P2PKH_TESTNET.value,
-        ("p2pkh", NetworkType.MAINNET.value): AddressPrefix.P2PKH_MAINNET.value,
-        ("p2sh", NetworkType.TESTNET.value): AddressPrefix.P2SH_TESTNET.value,
-        ("p2sh", NetworkType.MAINNET.value): AddressPrefix.P2SH_MAINNET.value,
-        ("wif", NetworkType.TESTNET.value): AddressPrefix.WIF_TESTNET.value,
-        ("wif", NetworkType.MAINNET.value): AddressPrefix.WIF_MAINNET.value,
-    }
-    return prefix_map.get((address_type, network), b"")# TODO - need a default value here or no
-
-
-def create_address(prefix: bytes, data: bytes) -> str:
-    raw = prefix + data
-    checksum = create_checksum(raw)
-    return encode_base58(raw + checksum)
-
 def p2pkh_script(address: bytes) -> str:
     """
     Generate a Pay-to-Public-Key-Hash (P2PKH) script.
-    
+
     Args:
         address (bytes): The public key hash.
-    
+
     Returns:
         str: The hexadecimal representation of the P2PKH script.
     """
     h160 = hash160(address)
-    script_pub = b"".join([
-        OpCode.OP_DUP.value,
-        OpCode.OP_HASH160.value,
-        bytes([len(h160)]),
-        h160,
-        OpCode.OP_EQUALVERIFY.value,
-        OpCode.OP_CHECKSIG.value,
-    ])
+    script_pub = b"".join(
+        [
+            OpCode.OP_DUP.value,
+            OpCode.OP_HASH160.value,
+            bytes([len(h160)]),
+            h160,
+            OpCode.OP_EQUALVERIFY.value,
+            OpCode.OP_CHECKSIG.value,
+        ]
+    )
     return (bytes([len(script_pub)]) + script_pub).hex()
+
 
 def p2sh_script(address: bytes) -> str:
     """
     Generate a Pay-to-Script-Hash (P2SH) script.
-    
+
     Args:
         address (bytes): The script hash.
-    
+
     Returns:
         str: The hexadecimal representation of the P2SH script.
     """
     h160 = hash160(address)
     redeemscript = hash160(OpCode.OP_0.value + bytes([len(h160)]) + h160)
-    script_pub = b"".join([
-        OpCode.OP_HASH160.value,
-        bytes([len(redeemscript)]),
-        redeemscript,
-        OpCode.OP_EQUAL.value,
-    ])
-    print('p2sh script res', (bytes([len(script_pub)]) + script_pub).hex())
+    script_pub = b"".join(
+        [
+            OpCode.OP_HASH160.value,
+            bytes([len(redeemscript)]),
+            redeemscript,
+            OpCode.OP_EQUAL.value,
+        ]
+    )
+    print("p2sh script res", (bytes([len(script_pub)]) + script_pub).hex())
     return (bytes([len(script_pub)]) + script_pub).hex()
+
 
 def p2wpkh_script(address: bytes) -> str:
     """
     Generate a Pay-to-Witness-Public-Key-Hash (P2WPKH) script.
-    
+
     Args:
         address (bytes): The public key hash.
-    
+
     Returns:
         str: The hexadecimal representation of the P2WPKH script.
     """
     h160 = hash160(address)
-    script_pub = b"".join([
-        OpCode.OP_0.value,
-        bytes([len(h160)]),
-        h160,
-    ])
+    script_pub = b"".join(
+        [
+            OpCode.OP_0.value,
+            bytes([len(h160)]),
+            h160,
+        ]
+    )
     return (bytes([len(script_pub)]) + script_pub).hex()
-
