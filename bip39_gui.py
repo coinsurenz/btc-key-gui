@@ -5,15 +5,10 @@
 # Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
-import datetime
-
-from lib.seed_gen import seed_to_master
-from lib.address import indv_P2SH_pub_key, indv_P2WSH_pub_key
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QScrollArea, QWidget, QVBoxLayout, QDesktopWidget
-from typing import List, Union
 
-from ui.ui_functions import path_derivation_func, address_combo_func, num_words_func, seed_button, create_multisig, len_in_hex
+from ui.ui_functions import address_combo_func, num_words_func, seed_button
 
 
 class Ui_Bip39Tool(object):
@@ -422,35 +417,12 @@ class Ui_Bip39Tool(object):
         self.output_textbrowser.setMinimumSize(QtCore.QSize(0, 600))
         self.output_textbrowser.setObjectName("output_textbrowser")
         self.gridLayout.addWidget(self.output_textbrowser, 3, 6, 15, 2)
-
-        # self.decode_xpriv_checkbox = QtWidgets.QCheckBox(self.gridLayoutWidget)
-        # font = QtGui.QFont()
-        # font.setFamily("Carlito")
-        # font.setPointSize(13)
-        # self.decode_xpriv_checkbox.setFont(font)
-        # self.decode_xpriv_checkbox.setProperty("decode_xpriv_checkbox", False)
-        # self.decode_xpriv_checkbox.setObjectName("decode_xpriv_checkbox")
-        # self.gridLayout.addWidget(self.decode_xpriv_checkbox, 20, 5, 1, 1)
-
         self.numaddress_spinbox = QtWidgets.QSpinBox(self.gridLayoutWidget)
         self.numaddress_spinbox.setMaximumSize(QtCore.QSize(70, 16777215))
         self.numaddress_spinbox.setMinimum(1)
         self.numaddress_spinbox.setProperty("total_addresses_str", "")
         self.numaddress_spinbox.setObjectName("numaddress_spinbox")
         self.gridLayout.addWidget(self.numaddress_spinbox, 20, 6, 1, 1)
-
-        # self.decode_xprv_box = QtWidgets.QLineEdit(self.gridLayoutWidget)
-        # # self.decode_xpriv_box.addWidget(self.decode_xpriv_box, 20, 5, 1, 1)
-        # sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        # sizePolicy.setHorizontalStretch(0)
-        # sizePolicy.setVerticalStretch(0)
-        # sizePolicy.setHeightForWidth(self.decode_xpriv_box.sizePolicy().hasHeightForWidth())
-        # self.decode_xprv_box.setSizePolicy(sizePolicy)
-        # self.decode_xprv_box.setMinimumSize(QtCore.QSize(250, 35))
-        # self.decode_xprv_box.setMaximumSize(QtCore.QSize(250, 16777215))
-        # self.decode_xprv_box.setObjectName("decode_xprv_box")
-        # self.gridLayout.addWidget(self.decode_xprv_box, 22, 4, 1, 1)
-
         self.decode_xprv_label = QtWidgets.QLabel(self.gridLayoutWidget)
         font = QtGui.QFont()
         font.setFamily("Carlito")
@@ -568,8 +540,6 @@ class Ui_Bip39Tool(object):
         self.address_combobox.activated.connect(lambda data: address_combo_func(data, self))
         self.numwords_combobox.currentIndexChanged.connect(lambda data: num_words_func(data, self))
         self.okbutton_box.clicked.connect(lambda: seed_button(self))
-        # self.decode_xprv_label.setText(_translate("Bip39Tool", "Decode xprv"))
-        # self.decode_xprv_box.setPlaceholderText(_translate("Bip39Tool", "Enter xprvv to decode"))
 
 
 if __name__ == "__main__":

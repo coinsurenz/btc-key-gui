@@ -94,13 +94,13 @@ class Keylevel:
 
     def __init__(
         self,
-        chaincode: bytes,
-        priv_key: bytes,
-        pub_key: bytes,
+        input_chaincode: bytes,
+        input_priv_key: bytes,
+        input_pub_key: bytes,
         index: int,
         hardened: bool,
         depth: int,
-        fingerprint: bytes,
+        input_fingerprint: bytes,
         address_type: AddressType,
         is_testnet: bool,
     ):
@@ -118,13 +118,13 @@ class Keylevel:
             address_type (AddressType): The type of address to generate.
             is_testnet (bool): Whether this is for the testnet.
         """
-        self.chaincode = chaincode
-        self.priv_key = priv_key
-        self.pub_key = pub_key
+        self.input_chaincode = input_chaincode
+        self.input_priv_key = input_priv_key
+        self.input_pub_key = input_pub_key
         self.index = int(index)
         self.hardened = hardened
         self.depth = depth
-        self.fingerprint = fingerprint
+        self.input_fingerprint = input_fingerprint
         self.address_type = AddressType(address_type).value
         self.testnet = is_testnet
 
@@ -137,14 +137,14 @@ class Keylevel:
         """
         if self.hardened:
             i = self.HARDENED_THRESHOLD + self.index
-            data = b"\x00" + self.priv_key
+            data = b"\x00" + self.input_priv_key
         else:
             i = self.index
-            data = self.pub_key
+            data = self.input_pub_key
         i_bytes = struct.pack(">I", i & 0xFFFFFFFF)
         hmac_data = data + i_bytes
         child_key_hmac = hmac.new(
-            key=self.chaincode, msg=hmac_data, digestmod=hashlib.sha512
+            key=self.input_chaincode, msg=hmac_data, digestmod=hashlib.sha512
         ).digest()
 
         return child_key_hmac[:32], child_key_hmac[32:]
@@ -158,7 +158,7 @@ class Keylevel:
         """
         child_key, _ = self._derive_child_key()
         child_key_int = string_to_int(child_key)
-        master_key_int = string_to_int(self.priv_key)
+        master_key_int = string_to_int(self.input_priv_key)
         new_key = (child_key_int + master_key_int) % CURVE_ORDER
         return int_to_string(new_key).rjust(32, b"\x00")
 
@@ -182,14 +182,14 @@ class Keylevel:
         pubpoint = int.from_bytes(self.CKDpriv(), byteorder="big") * G
         return bytes(S256Point.sec(pubpoint))
 
-    def fprint(self) -> bytes:
+    def fingerprint(self) -> bytes:
         """
         Compute the fingerprint of the public key.
 
         Returns:
             bytes: The first 4 bytes of the hash160 of the public key.
         """
-        return hash160(self.pub_key)[:4]
+        return hash160(self.input_pub_key)[:4]
 
     def _get_version_bytes(self, is_private: bool) -> bytes:
         """
@@ -202,18 +202,26 @@ class Keylevel:
             bytes: The version bytes.
         """
         version_bytes = {
-            (AddressType.P2WPKH_P2SH, True, True): b"\x04\x4A\x4E\x28",
-            (AddressType.P2WPKH_P2SH, True, False): b"\x04\x9D\x78\x78",
-            (AddressType.P2WPKH, True, True): b"\x04\x5F\x18\xBC",
-            (AddressType.P2WPKH, True, False): b"\x04\xB2\x43\x0C",
-            (AddressType.P2WSH, True, True): b"\x02\x57\x50\x48",
-            (AddressType.P2WSH, True, False): b"\x02\xAA\x7A\x99",
-            (AddressType.P2WPKH_P2SH, False, True): b"\x04\x4A\x52\x62",
-            (AddressType.P2WPKH_P2SH, False, False): b"\x04\x9D\x7C\xB2",
-            (AddressType.P2WPKH, False, True): b"\x04\x5F\x1C\xF6",
-            (AddressType.P2WPKH, False, False): b"\x04\xB2\x47\x46",
-            (AddressType.P2WSH, False, True): b"\x02\x57\x54\x83",
-            (AddressType.P2WSH, False, False): b"\x02\xAA\x7E\xD3",
+            (AddressType.P2WPKH_P2SH.value, True, True): b"\x04\x4A\x4E\x28",
+            (AddressType.P2WPKH_P2SH.value, True, False): b"\x04\x9D\x78\x78",
+            (AddressType.P2WPKH_P2SH.value, False, True): b"\x04\x4A\x52\x62",
+            (AddressType.P2WPKH_P2SH.value, False, False): b"\x04\x9D\x7C\xB2",
+            (AddressType.P2WPKH.value, True, True): b"\x04\x5F\x18\xBC",
+            (AddressType.P2WPKH.value, True, False): b"\x04\xB2\x43\x0C",
+            (AddressType.P2WPKH.value, False, True): b"\x04\x5F\x1C\xF6",
+            (AddressType.P2WPKH.value, False, False): b"\x04\xB2\x47\x46",
+            (AddressType.P2WSH.value, True, True): b"\x02\x57\x50\x48",
+            (AddressType.P2WSH.value, True, False): b"\x02\xAA\x7A\x99",
+            (AddressType.P2WSH.value, False, True): b"\x02\x57\x54\x83",
+            (AddressType.P2WSH.value, False, False): b"\x02\xAA\x7E\xD3",
+            (AddressType.P2SH.value, True, True): b"\x04\x35\x83\x94",
+            (AddressType.P2SH.value, True, False): b"\x04\x88\xAD\xE4",
+            (AddressType.P2SH.value, False, True): b"\x04\x35\x83\x94",
+            (AddressType.P2SH.value, False, False): b"\x04\x88\xB2\x1E",
+            (AddressType.P2PKH.value, True, True): b"\x04\x35\x83\x94",
+            (AddressType.P2PKH.value, True, False): b"\x04\x88\xAD\xE4",
+            (AddressType.P2PKH.value, False, True): b"\x04\x35\x83\x94",
+            (AddressType.P2PKH.value, False, False): b"\x04\x88\xB2\x1E",
         }
 
         return version_bytes.get(
@@ -235,37 +243,18 @@ class Keylevel:
         depth = bytes([self.depth])
         index = i.to_bytes(4, byteorder="big")
         chaincode = self.CKCpriv()
-        fingerprint = self.fprint()  # was self.fingerprint
+        fingerprint = self.fingerprint()  # was self.fingerprint
         key_data = b"\x00" + self.CKDpriv() if is_private else self.pubkey()
         return version + depth + fingerprint + index + chaincode + key_data
 
-    def xprv(self) -> str:  # TODO can use _get_version_bytes ?
+    def xprv(self) -> str:
         """
         Generate the extended private key.
 
         Returns:
             str: The base58-encoded extended private key.
         """
-        print("$$$$$testnet", self.testnet)
-        if self.address_type == "p2wpkh-p2sh":
-            if self.testnet:
-                prefix = b"\x04\x4A\x4E\x28"
-            else:
-                prefix = b"\x04\x9D\x78\x78"
-        elif self.address_type == "p2wpkh":
-            if self.testnet:
-                prefix = b"\x04\x5F\x18\xBC"
-            else:
-                prefix = b"\x04\xB2\x43\x0C"
-        elif self.address_type == "p2wsh":
-            if self.testnet:
-                prefix = b"\x02\x57\x50\x48"
-            else:
-                prefix = b"\x02\xAA\x7A\x99"
-        elif self.testnet:
-            prefix = b"\x04\x35\x83\x94"
-        else:
-            prefix = b"\x04\x88\xAD\xE4"
+        prefix = self._get_version_bytes(True)
         if self.hardened:
             i = 2147483648 + self.index
         else:
@@ -273,7 +262,7 @@ class Keylevel:
         xprvraw = (
             prefix
             + bytes([self.depth])
-            + self.fingerprint
+            + self.fingerprint()
             + bytes.fromhex(format(i, "x").rjust(8, "0"))
             + self.CKCpriv()
             + b"\x00"
@@ -283,32 +272,14 @@ class Keylevel:
         xprvfull = xprvraw + checksum
         return encode_base58(xprvfull)
 
-    def xpub(self) -> str:  # TODO can use _get_version_bytes ?
+    def xpub(self) -> str:
         """
         Generate the extended public key.
 
         Returns:
             str: The base58-encoded extended public key.
         """
-        if self.address_type == "p2wpkh-p2sh":
-            if self.testnet:
-                prefix = b"\x04\x4A\x52\x62"
-            else:
-                prefix = b"\x04\x9D\x7C\xB2"
-        elif self.address_type == "p2wpkh":
-            if self.testnet:
-                prefix = b"\x04\x5F\x1C\xF6"
-            else:
-                prefix = b"\x04\xB2\x47\x46"
-        elif self.address_type == "p2wsh":
-            if self.testnet:
-                prefix = b"\x02\x57\x54\x83"
-            else:
-                prefix = b"\x02\xAA\x7E\xD3"
-        elif self.testnet:
-            prefix = b"\x04\x35\x87\xCF"
-        else:
-            prefix = b"\x04\x88\xB2\x1E"
+        prefix = self._get_version_bytes(False)
         if self.hardened:
             i = 2147483648 + self.index
         else:
@@ -316,7 +287,7 @@ class Keylevel:
         xpubraw = (
             prefix
             + bytes([self.depth])
-            + self.fingerprint
+            + self.fingerprint()
             + bytes.fromhex(format(i, "x").rjust(8, "0"))
             + self.CKCpriv()
             + self.pubkey()
@@ -383,7 +354,7 @@ def path_gen_keylist(
         input_cc = master_key_data.CKCpriv()
         input_pk = master_key_data.CKDpriv()
         input_pub = master_key_data.pubkey()
-        input_fp = master_key_data.fprint()
+        input_fp = master_key_data.fingerprint()
         account_extended_private_key = xprv
         account_extended_public_key = xpub
         xprv = master_key_data.xprv()
@@ -401,7 +372,7 @@ def path_gen_keylist(
             address_type,
             is_testnet,
         )
-        input_fp = gen_fp.fprint()
+        input_fp = gen_fp.fingerprint()
 
     key_index = 0
     key_result = []

@@ -106,9 +106,11 @@ def seed_button(ui):
         address_type,
         testnet,
     )
-    result_data = f"{result[0][:234]}\n"
+    # result_data = f"{result[0][:234]}\n"
+    result_data = f"{result[0][:273]}\n"
     for key_data in result:
-        result_data += f"{key_data[234:]}\n\n"
+        # result_data += f"{key_data[234:]}\n\n"
+        result_data += f"{key_data[273:]}\n\n"
     ui.output_textbrowser.setText(result_data)
 
     if ui.textfile_CheckBox.isChecked():

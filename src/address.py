@@ -156,7 +156,6 @@ def indv_P2SH_pub_key(
     Returns:
         str: The P2SH address.
     """
-    print("pubkey indv_P2SH_pub_key input bytes", pubkey.hex())
     prefix = get_address_prefix("p2sh", network)
     addr = create_address(prefix, hash160(pubkey))
     return str(addr, "utf-8")
@@ -193,7 +192,6 @@ def indv_P2WSH_pub_key(
     Returns:
         str: The P2WSH address.
     """
-    print("pubkey indv_P2WSH_pub_key input bytes", pubkey.hex())
     witnessprog = hashlib.sha256(pubkey).digest()
     hrp = "tb" if network == NetworkType.TESTNET.value else "bc"
     return encode_bech32(hrp, 0, witnessprog)
@@ -308,7 +306,6 @@ def p2sh_script(address: bytes) -> str:
             OpCode.OP_EQUAL.value,
         ]
     )
-    print("p2sh script res", (bytes([len(script_pub)]) + script_pub).hex())
     return (bytes([len(script_pub)]) + script_pub).hex()
 
 
