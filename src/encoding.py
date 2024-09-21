@@ -1,6 +1,8 @@
 """Encoding utilities for Bitcoin addresses and keys."""
 
 from .constants import BASE58, CHARSET
+from typing import Tuple
+from .crypto import hash256
 
 
 def encode_base58(s):
@@ -226,3 +228,63 @@ def encode_bech32(hrp, witver, witprog):
     # if decode(hrp, ret) == (None, None):
     # return None
     return ret
+
+def decode_xprv(xprv_string: str) -> Tuple[bytes, bytes]:
+    """
+    Decode an xprv string and extract the chain code and private key.
+
+    Args:
+        xprv_string (str): The xprv string to decode.
+
+    Returns:
+        Tuple[bytes, bytes]: A tuple containing (chain_code, private_key).
+
+    Raises:
+        ValueError: If the input is not a valid xprv string.
+    """
+    # Decode the Base58 string
+    xprv_bytes = decode_base58(xprv_string)
+
+    # Check the length
+    if len(xprv_bytes) != 82:  # 4 (prefix) + 1 (depth) + 4 (fingerprint) + 4 (child number) + 32 (chain code) + 33 (private key) + 4 (checksum)
+        raise ValueError("Invalid xprv string length")
+
+    # Verify the checksum
+    if hash256(xprv_bytes[:-4])[:4] != xprv_bytes[-4:]:
+        raise ValueError("Invalid checksum")
+
+    # Extract the chain code and private key
+    chain_code = xprv_bytes[13:45]  # 32 bytes
+    private_key = xprv_bytes[46:78]  # 32 bytes, ignoring the first byte (which should be 0x00)
+
+    return chain_code, private_key
+
+def decode_base58(s: str) -> bytes:
+    """Decode a Base58-encoded string."""
+
+    if isinstance(s, str):
+        s = s.encode('ascii')
+
+    n = 0
+    for c in s:
+        n *= 58
+        if c not in BASE58:
+            raise ValueError(f"Invalid character '{c}' in Base58 string")
+        digit = BASE58.index(c)
+        n += digit
+
+    h = '%x' % n
+    if len(h) % 2:
+        h = '0' + h
+    res = bytes.fromhex(h)
+
+    # Add leading zero bytes
+    pad = 0
+    for c in s:
+        if c == BASE58[0]:
+            pad += 1
+        else:
+            break
+    return b'\x00' * pad + res
+
+

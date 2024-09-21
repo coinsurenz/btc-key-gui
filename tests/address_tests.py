@@ -15,6 +15,7 @@ from src.address import (
     indv_priv_key,
     get_address_prefix,
     convert_pubkey_to_pubdata,
+    privkey_to_pubkey,
 )
 from src.crypto import hash160
 from src.constants import OpCode, NetworkType, AddressPrefix
@@ -319,3 +320,11 @@ def test_get_address_prefix():
         get_address_prefix("wif", NetworkType.TESTNET.value)
         == AddressPrefix.WIF_TESTNET.value
     )
+
+def test_privkey_to_pubkey():
+    privkey = bytes.fromhex('ce815918fd4e77328f3c5b696081d9d4ff478a7c07cfb9b443aa34e52284d670')
+    expected_pubkey = bytes.fromhex('036889e5873ed5a78666cde9b0f623d0bde8807ecda551222e2943800b0fb1e47d')
+
+    result = privkey_to_pubkey(privkey)
+
+    assert result == expected_pubkey

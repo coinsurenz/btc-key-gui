@@ -67,60 +67,61 @@ def num_words_func(data: int, ui):
     return selection
 
 
-def seed_button(ui):
-    if ui.multisig_checkbox.isChecked():
-        return create_multisig(ui.numaddress_spinbox.value(), ui)
+def seed_button(ui, is_print):
+    if is_print:
 
-    words = [getattr(ui, f"word{i}_box").text() for i in range(1, 25)]
-    words_list = [item for item in words if item != ""]
-    seed = " ".join(words_list)
-    passphrase = ui.bip39pass_box.text()
-    derivation_path_data = path_derivation_func(ui.derivationpath_box.text(), ui)
-    if not derivation_path_data:
-        return
-    derivation_path, hardened_items = derivation_path_data
+        words = [getattr(ui, f"word{i}_box").text() for i in range(1, 25)]
+        words_list = [item for item in words if item != ""]
+        seed = " ".join(words_list)
+        passphrase = ui.bip39pass_box.text()
+        derivation_path_data = path_derivation_func(ui.derivationpath_box.text(), ui)
+        if not derivation_path_data:
+            return
+        derivation_path, hardened_items = derivation_path_data
 
-    total_addresses = ui.numaddress_spinbox.value()
-    address_type = address_combo_func(ui.address_combobox.currentIndex(), ui)
-    testnet = ui.testnet_checkbox.isChecked()
-    hardened_items.append(ui.hardened_checkbox.isChecked())
+        total_addresses = ui.numaddress_spinbox.value()
+        address_type = address_combo_func(ui.address_combobox.currentIndex(), ui)
+        testnet = ui.testnet_checkbox.isChecked()
+        hardened_items.append(ui.hardened_checkbox.isChecked())
 
-    if address_type in ["bip44", "bip49", "bip84"]:
-        derivation_path = [int(address_type[3:]), 0, 0, 0]
-        address_type = (
-            "p2pkh"
-            if address_type == "bip44"
-            else "p2wpkh-p2sh" if address_type == "bip49" else "p2wpkh"
-        )
-        hardened_items = [True, True, True, False]
-    elif address_type == "bip141":
-        address_type = "p2wpkh-p2sh"
-        hardened_items[-1] = False
-
-    result = seed_to_master(
-        seed,
-        passphrase,
-        derivation_path,
-        hardened_items,
-        total_addresses,
-        address_type,
-        testnet,
-    )
-    # result_data = f"{result[0][:234]}\n"
-    result_data = f"{result[0][:273]}\n"
-    for key_data in result:
-        # result_data += f"{key_data[234:]}\n\n"
-        result_data += f"{key_data[273:]}\n\n"
-    ui.output_textbrowser.setText(result_data)
-
-    if ui.textfile_CheckBox.isChecked():
-        with open("data.txt", "a") as wallet:
-            wallet.write(
-                f"\n**NEW WALLET KEYS ADDED**- {datetime.datetime.now()}\n SEED={seed} PASSPHRASE={passphrase}\n{result_data[:234]}\n\n"
+        if address_type in ["bip44", "bip49", "bip84"]:
+            derivation_path = [int(address_type[3:]), 0, 0, 0]
+            address_type = (
+                "p2pkh"
+                if address_type == "bip44"
+                else "p2wpkh-p2sh" if address_type == "bip49" else "p2wpkh"
             )
-            for key_data in result:
-                wallet.write(f"{key_data[234:]}\n\n")
-    return result
+            hardened_items = [True, True, True, False]
+        elif address_type == "bip141":
+            address_type = "p2wpkh-p2sh"
+            hardened_items[-1] = False
+
+        result = seed_to_master(
+            seed,
+            passphrase,
+            derivation_path,
+            hardened_items,
+            total_addresses,
+            address_type,
+            testnet,
+        )
+        # result_data = f"{result[0][:234]}\n"
+        result_data = f"{result[0][:273]}\n"
+        for key_data in result:
+            # result_data += f"{key_data[234:]}\n\n"
+            result_data += f"{key_data[273:]}\n\n"
+        ui.output_textbrowser.setText(result_data)
+
+        if ui.textfile_CheckBox.isChecked():
+            with open("data.txt", "a") as wallet:
+                wallet.write(
+                    f"\n**NEW WALLET KEYS ADDED**- {datetime.datetime.now()}\n SEED={seed} PASSPHRASE={passphrase}\n{result_data[:234]}\n\n"
+                )
+                for key_data in result:
+                    wallet.write(f"{key_data[234:]}\n\n")
+        return result
+    else:
+        ui.output_textbrowser.clear()
 
 
 msig_opcodes = [

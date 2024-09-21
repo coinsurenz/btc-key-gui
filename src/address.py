@@ -4,7 +4,7 @@ import hashlib
 from .constants import NetworkType, AddressPrefix, OpCode
 from .crypto import create_checksum, hash160
 from .encoding import encode_base58, encode_bech32
-
+from .ecdsa_functions import S256Point, G
 
 def convert_pubkey_to_pubdata(pubkey, testnet, address_type):
     """
@@ -328,3 +328,8 @@ def p2wpkh_script(address: bytes) -> str:
         ]
     )
     return (bytes([len(script_pub)]) + script_pub).hex()
+
+def privkey_to_pubkey(privkey: bytes) -> bytes:
+    """Convert a private key to a public key."""
+    pubpoint = int.from_bytes(privkey, byteorder="big") * G
+    return bytes(S256Point.sec(pubpoint))

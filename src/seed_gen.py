@@ -8,9 +8,10 @@ from pbkdf2 import PBKDF2
 from .ecdsa_functions import S256Point, G, CURVE_ORDER
 from typing import List, Tuple
 from .constants import AddressType
-from .encoding import encode_base58
+from .encoding import encode_base58, decode_xprv, decode_base58
 from .crypto import hash160, hash256
-from .address import convert_pubkey_to_pubdata, indv_priv_key
+from .address import convert_pubkey_to_pubdata, indv_priv_key, privkey_to_pubkey
+
 
 
 def seed_to_master(
@@ -426,3 +427,53 @@ def path_gen_keylist(
         key_index += 1
         key_result.append(result_text)
     return key_result
+
+# TODO: write tests and adjust output when incorporated into gui
+def generate_keys_from_xprv(xprv_string: str, total_keys: int, address_type: str, testnet: bool) -> List[Tuple[Keylevel, str]]:
+    """
+    Generate a list of keys from an xprv string.
+
+    Args:
+        xprv_string (str): The xprv string to use as a base.
+        total_keys (int): The number of keys to generate.
+        address_type (str): The type of address to generate.
+        testnet (bool): Whether to use testnet or mainnet.
+
+    Returns:
+        List[Tuple[Keylevel, str]]: A list of tuples, each containing a Keylevel object and the corresponding private key.
+    """
+    chain_code, private_key = decode_xprv(xprv_string)
+
+    xprv_bytes = decode_base58(xprv_string)
+    depth = xprv_bytes[4]
+    fingerprint = xprv_bytes[5:9]
+    child_number = int.from_bytes(xprv_bytes[9:13], 'big')
+
+    public_key = privkey_to_pubkey(private_key)
+
+    base_key = Keylevel(
+        chain_code,
+        private_key,
+        public_key,
+        child_number,
+        child_number >= 0x80000000,  # hardened 0x80000000needed here?
+        depth,
+        fingerprint,
+        address_type,
+        testnet
+    )
+
+    results = []
+    for i in range(total_keys):
+
+        testdepth = depth+1
+        path_private = indv_priv_key(base_key.CKDpriv(), testnet)
+        privatehex = base_key.CKDpriv().hex()
+        index_key_data = Keylevel(chain_code, private_key, public_key, i, child_number >= 0x80000000, testdepth, base_key.fingerprint(), address_type, testnet)
+        path_pubkey = index_key_data.pubkey()
+        path_private = indv_priv_key(index_key_data.CKDpriv(), testnet)
+        privatehex = index_key_data.CKDpriv().hex()
+        public, script_pub, signscript = convert_pubkey_to_pubdata(path_pubkey, testnet, address_type)
+        results.append((path_private, privatehex, public, script_pub, signscript))
+
+    return results
