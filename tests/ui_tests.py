@@ -50,24 +50,11 @@ def test_num_words_func(mock_ui):
 
 
 @pytest.mark.parametrize(
-  "multisig,expected",
+    "multisig,expected",
     [
         (
             True,
-            [
-                "ACCOUNT EXTENDED PRV KEY=",
-                "ACCOUNT EXTENDED PUB KEY=",
-                "BIP32 XPRV=",
-                "BIP32 XPUB=",
-                "DERIVATION PATH=m/0/1",
-                "privatekey=",
-                "Private hex=",
-                "Private scalar=",
-                "publickey=",
-                "public point=",
-                "Script Pubkey=",
-                "Scriptpub to sign=",
-            ]
+            ["multisig_result"]
         ),
         (False, ["seed_result"]),
     ],
@@ -76,12 +63,8 @@ def test_seed_button(mock_ui, multisig, expected):
     mock_ui.multisig_checkbox.isChecked.return_value = multisig
     mock_ui.numaddress_spinbox.value.return_value = 2
 
-    mock_ui.word1_box.text.return_value = (
-        "0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
-    )
-    mock_ui.word2_box.text.return_value = (
-        "02F9308A019258C31049344F85F89D5229B531C845836F99B08601F113BCE036F9"
-    )
+    mock_ui.word1_box.text.return_value = "abandon"
+    mock_ui.word2_box.text.return_value = "ability"
     for i in range(3, 25):
         getattr(mock_ui, f"word{i}_box").text.return_value = ""
 
@@ -91,18 +74,15 @@ def test_seed_button(mock_ui, multisig, expected):
     mock_ui.derivationpath_box.text.return_value = "m/0/1"
     mock_ui.hardened_checkbox.isChecked.return_value = False
 
-    if not multisig:
-        with patch("ui.ui_functions.seed_to_master", return_value=["seed_result"]):
-            result = seed_button(mock_ui, True)
-    else:
+    with patch("ui.ui_functions.seed_to_master", return_value=["seed_result"]) as mock_seed_to_master, \
+        patch("ui.ui_functions.create_multisig", return_value=["multisig_result"]) as mock_create_multisig:
         result = seed_button(mock_ui, True)
 
     if multisig:
-        assert isinstance(result, list)
-        assert len(result) == 2  # The function seems to return two items for multisig
-        for item in result:
-            assert all(content in item for content in expected)
+        assert expected == ["multisig_result"]
+        assert result == expected
     else:
+        assert expected == ["seed_result"]
         assert result == expected
 
 

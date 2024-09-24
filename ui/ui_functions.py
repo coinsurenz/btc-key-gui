@@ -68,6 +68,8 @@ def num_words_func(data: int, ui):
 
 
 def seed_button(ui, is_print):
+    if ui.multisig_checkbox.isChecked():
+        return create_multisig(ui.numaddress_spinbox.value(), ui)
     if is_print:
 
         words = [getattr(ui, f"word{i}_box").text() for i in range(1, 25)]
@@ -105,11 +107,15 @@ def seed_button(ui, is_print):
             address_type,
             testnet,
         )
-        # result_data = f"{result[0][:234]}\n"
-        result_data = f"{result[0][:273]}\n"
+        if len(derivation_path) == 1:
+            result_data = f"{result[0][:297]}\n"
+        else:
+            result_data = f"{result[0][:273]}\n"
         for key_data in result:
-            # result_data += f"{key_data[234:]}\n\n"
-            result_data += f"{key_data[273:]}\n\n"
+            if len(derivation_path) == 1:
+                result_data += f"{key_data[297:]}\n\n"
+            else:
+                result_data += f"{key_data[273:]}\n\n"
         ui.output_textbrowser.setText(result_data)
 
         if ui.textfile_CheckBox.isChecked():

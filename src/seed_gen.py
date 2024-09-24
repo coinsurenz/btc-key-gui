@@ -244,7 +244,7 @@ class Keylevel:
         depth = bytes([self.depth])
         index = i.to_bytes(4, byteorder="big")
         chaincode = self.CKCpriv()
-        fingerprint = self.fingerprint()  # was self.fingerprint
+        fingerprint = self.fingerprint()
         key_data = b"\x00" + self.CKDpriv() if is_private else self.pubkey()
         return version + depth + fingerprint + index + chaincode + key_data
 
