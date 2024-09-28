@@ -379,7 +379,8 @@ def path_gen_keylist(
     key_result = []
 
     for key in range(total_keys):
-        is_derived_key_hardened = hardened_list[depth - 1]
+        is_derived_key_hardened = hardened_list[depth]
+
         index_key_data = Keylevel(
             input_cc,
             input_pk,
