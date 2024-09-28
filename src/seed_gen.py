@@ -3,10 +3,10 @@ import hmac
 import struct
 import hashlib
 import codecs
+from typing import List, Tuple
 from ecdsa.ecdsa import int_to_string, string_to_int
 from pbkdf2 import PBKDF2
 from .ecdsa_functions import S256Point, G, CURVE_ORDER
-from typing import List, Tuple
 from .constants import AddressType
 from .encoding import encode_base58, decode_xprv, decode_base58
 from .crypto import hash160, hash256
@@ -28,7 +28,7 @@ def seed_to_master(
 
     Args:
         seed (str): The seed phrase.
-        passphrase (str): Additional passphrase for extra security.
+        passphrase (str): passphrase if ipplicable or "" if no passphrase used.
         derivation_path (List[int]): The derivation path for child keys.
         hardened_items (List[bool]): List indicating which derivation steps are hardened.
         total_addresses (int): Number of addresses to generate.

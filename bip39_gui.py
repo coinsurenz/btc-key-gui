@@ -274,6 +274,7 @@ class Ui_Bip39Tool(object):
         )
         self.bip39pass_box.setProperty("bip39_passphrase", "")
         self.bip39pass_box.setObjectName("bip39pass_box")
+        self.bip39pass_box.setEnabled(False)
         self.gridLayout.addWidget(self.bip39pass_box, 16, 4, 1, 2)
         self.word13_box = QtWidgets.QLineEdit(self.gridLayoutWidget)
         self.word13_box.setEnabled(True)
@@ -512,9 +513,7 @@ class Ui_Bip39Tool(object):
             lambda data: num_words_func(data, self)
         )
         self.okbutton_box.clicked.connect(self.map_ok_button_box)
-        self.bip39_checkbox.stateChanged.connect(
-            lambda checked: self.bip39pass_box.setEnabled(checked)
-        )
+        self.bip39_checkbox.stateChanged.connect(self.toggle_bip39_password)
         self.numwords_combobox.addItems(["0", "1", "2", "3", "4", "5", "6", "7"])
         self.address_combobox.addItems(["0", "1", "2", "3", "4", "5", "6", "7", "8"])
 
@@ -664,6 +663,13 @@ class Ui_Bip39Tool(object):
             == QtWidgets.QDialogButtonBox.RejectRole
         ):
             seed_button(self, False)
+
+    def toggle_bip39_password(self, state):
+        if state == QtCore.Qt.Checked:
+            self.bip39pass_box.setEnabled(True)
+        else:
+            self.bip39pass_box.setEnabled(False)
+            self.bip39pass_box.clear()  # Clear the content when unchecked
 
 
 if __name__ == "__main__":

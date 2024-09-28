@@ -6,42 +6,42 @@ from .crypto import create_checksum, hash160
 from .encoding import encode_base58, encode_bech32
 from .ecdsa_functions import S256Point, G
 
-def convert_pubkey_to_pubdata(pubkey, testnet, address_type):
+def convert_pubkey_to_pubdata(pubkey, is_testnet, address_type):
     """
     Convert a public key to various address formats and their corresponding scripts.
 
     Args:
         pubkey (bytes): The public key to convert.
-        testnet (bool): Whether to use testnet or mainnet.
+        is_testnet (bool): Whether to use testnet or mainnet.
         address_type (str): The type of address to generate ('p2pkh', 'p2sh', 'p2wpkh-p2sh', 'p2wpkh', or 'p2wsh').
 
     Returns:
         tuple: A tuple containing (address, script_pub, redeemscript).
-               The contents vary based on the address_type.
+        The contents vary based on the address_type.
     """
     address_functions = {
         "p2pkh": lambda: (
-            indv_P2PKH_pub_key(pubkey, testnet),
+            indv_P2PKH_pub_key(pubkey, is_testnet),
             p2pkh_script(pubkey),
             None,
         ),
         "p2sh": lambda: (
-            indv_P2SH_pub_key(redeemscript := p2sh_redeemscript(pubkey), testnet),
+            indv_P2SH_pub_key(redeemscript := p2sh_redeemscript(pubkey), is_testnet),
             p2sh_script(redeemscript),
             (bytes([len(redeemscript)]) + redeemscript).hex(),
         ),
         "p2wpkh-p2sh": lambda: (
-            indv_P2WPKH_P2SH_pub_key(pubkey, testnet),
+            indv_P2WPKH_P2SH_pub_key(pubkey, is_testnet),
             p2sh_script(pubkey),
             "1976a9" + p2wpkh_p2sh_redeemscript(pubkey)[6:] + "88ac",
         ),
         "p2wpkh": lambda: (
-            indv_P2WPKH_pub_key(pubkey, testnet),
+            indv_P2WPKH_pub_key(pubkey, is_testnet),
             script_pub := p2wpkh_script(pubkey),
             "1976a9" + script_pub[4:] + "88ac",
         ),
         "p2wsh": lambda: (
-            indv_P2WSH_pub_key(redeemscript := p2sh_redeemscript(pubkey), testnet),
+            indv_P2WSH_pub_key(redeemscript := p2sh_redeemscript(pubkey), is_testnet),
             p2sh_script(pubkey),
             (bytes([len(redeemscript)]) + redeemscript).hex(),
         ),
@@ -209,17 +209,6 @@ def p2wpkh_p2sh_redeemscript(pubkey):
 
     Returns:
         str: The hexadecimal representation of the P2WPKH-P2SH redeem script.
-
-    Note:
-        The function creates a nested structure:
-        1. Inner redeemscript: OP_0 + <len of h160> + <h160 of pubkey>
-        2. Full redeemscript: <len of inner redeemscript> + <inner redeemscript>
-        3. Final redeemscript: <len of full redeemscript> + <full redeemscript>
-
-    Example:
-        >>> pubkey = bytes.fromhex('0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798')
-        >>> p2wpkh_p2sh_redeemscript(pubkey)
-        '220014751e76e8199196d454941c45d1b3a323f1433bd6'
     """
     h160 = hash160(pubkey)
     redeemscript_raw = OpCode.OP_0.value + bytes([len(h160)]) + h160
@@ -242,15 +231,6 @@ def p2sh_redeemscript(pubkey):
 
     Returns:
         bytes: The P2SH redeem script as raw bytes.
-
-    Note:
-        The redeem script structure is:
-        <len of pubkey> <pubkey> OP_CHECKSIG
-
-    Example:
-        >>> pubkey = bytes.fromhex('0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798')
-        >>> p2sh_redeemscript(pubkey).hex()
-        '210279be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798ac'
     """
     tx_redeemscript = b"".join(
         [
