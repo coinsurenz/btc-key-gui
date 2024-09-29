@@ -51,6 +51,8 @@ def address_combo_func(data: int, ui):
     elif selection == "bip141":
         ui.hardened_checkbox.setDisabled(True)
         ui.hardened_checkbox.setChecked(False)
+        ui.derivationpath_box.setText("m/0")
+
     else:
         ui.derivationpath_box.setDisabled(False)
         ui.hardened_checkbox.setDisabled(False)
@@ -72,7 +74,7 @@ def seed_button(ui, is_print):
         return create_multisig(ui.numaddress_spinbox.value(), ui)
     if is_print:
 
-        words = [getattr(ui, f"word{i}_box").text() for i in range(1, 25)]
+        words = [getattr(ui, f"word{i}_box").text().strip() for i in range(1, 25)]
         words_list = [item for item in words if item != ""]
         seed = " ".join(words_list)
         passphrase = ui.bip39pass_box.text()
@@ -93,7 +95,7 @@ def seed_button(ui, is_print):
                 if address_type == "bip44"
                 else "p2wpkh-p2sh" if address_type == "bip49" else "p2wpkh"
             )
-            hardened_items = [True, True, True, False]
+            hardened_items = [True, True, True, False, False]
         elif address_type == "bip141":
             address_type = "p2wpkh-p2sh"
             hardened_items[-1] = False
