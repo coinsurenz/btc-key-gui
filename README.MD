@@ -55,44 +55,55 @@ Appimage and standalone app for Mac will be added in the near future
 
 --Output containing derivation path, private key in WIF, integer and hex format, public key address, public point on curve and scriptpubkey
 
---Results are output in a file titled 'data.txt' with the time addresses were generated, along with all information presented on screen 
+--Results are output in a file titled 'data.txt' with the time addresses were generated, along with all information presented on screen
 
 
 ## Usage- generating single sig addresses
 
 * Select the number of words you wish to use
+
 ![Screenshot](https://i.imgur.com/QKtRMOh.png)
 
 * Enter the words in the relevant boxes
+
 ![Screenshot](https://i.imgur.com/7xYZD1F.png)
 
 * If you wish to use a passphrase check the box and enter it in the passphrase box
-![Screenshot](https://i.imgur.com/Yh1c6K1.png)  
+
+![Screenshot](https://i.imgur.com/Yh1c6K1.png)
 
 * Enter the derivation path
+
 ![Screenshot](https://i.imgur.com/bOdS4oJ.png)
 
 * Select the address type you wish to generate- presets for bip44, bip49, bip84 will set the address type automatically
+
 ![Screenshot](https://i.imgur.com/Q9WDulq.png)
 
 * Select if want the addresses to be hardened or not
+
 ![Screenshot](https://i.imgur.com/M5prLGi.png)
 
 * Select testnet or mainnet
+
 ![Screenshot](https://i.imgur.com/sOgmCGh.png)
 
 * Select whether you want to output the results to a text file or not.  If selected the results, including the seed words used will be output to a file titled data.txt in the current working directory. Further output will contine to be added to this same file when this checkbox is selected.
+
 ![Screenshot](https://i.imgur.com/z85R8A8.png)
 
 * Select the number of addresses you wish to generate
+
 ![Screenshot](https://imgur.com/KnkwYuw.png)
 
 * Click the OK button to generate the addresses, and click the cancel button when you wish to clear the current data displayed
+
 ![Screenshot](https://imgur.com/UvKlAfT.png)
 
 
 
 ## Usage- generating multi sig addresses
+
 ![Screenshot](https://i.imgur.com/eTtq82U.png)
 
 This opperates differently to the single sig address generation.  We need to generate the single sig addresses first and then use those public keys to generate the multisig addresses.  This is done individually using the output of the single sig generation method above.
@@ -100,22 +111,28 @@ This opperates differently to the single sig address generation.  We need to gen
 * First generate the single sig addresses as above or by other means.  We will need the public point that corresponds to the private key we wish to use for the multisig.
 
 * Check the multisig box
+
 ![Screenshot](https://imgur.com/Jj1MwJr.png)
 
 * Enter the public point in the word boxes for each of the possible signers.  For example "036889e5873ed5a78666cde9b0f623d0bde8807ecda551222e2943800b0fb1e47d" would correspond to the public key "18g5SfgpLxtFSRikqrk4wYu1WAP7A81gSS" used in the example screen shot above.
+
 ![Screenshot](https://imgur.com/jpHTMrJ.png)
 
 * Select the threshold number of signers required to sign the transaction using the "Number of Addresses/M-sig sigs Required" spinner.  For example for a 2 of 3 multisig we would have 3 public points in the word boxes and set this spinner to 2.
+
 ![Screenshot](https://imgur.com/KnkwYuw.png)
 
 * Select the address type you wish to generate- either p2sh or p2wsh
+
 ![Screenshot](https://imgur.com/Q9WDulq.png)
 
 * Select the output to text file box if you wish to output the results to a text file
+
 ![Screenshot](https://imgur.com/z85R8A8.png)
 
 
 * Click the OK button to generate the addresses
+
 ![Screenshot](https://imgur.com/UvKlAfT.png)
 
 
