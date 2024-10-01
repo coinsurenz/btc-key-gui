@@ -1,7 +1,7 @@
 """Encoding utilities for Bitcoin addresses and keys."""
 
-from .constants import BASE58, CHARSET
 from typing import Tuple
+from .constants import BASE58, CHARSET
 from .crypto import hash256
 
 
@@ -225,8 +225,6 @@ def encode_bech32(hrp, witver, witprog):
         The commented-out section suggests a potential validation step that's currently disabled.
     """
     ret = bech32_encode(hrp, [witver] + convertbits(witprog, 8, 5))
-    # if decode(hrp, ret) == (None, None):
-    # return None
     return ret
 
 def decode_xprv(xprv_string: str) -> Tuple[bytes, bytes]:
@@ -242,20 +240,16 @@ def decode_xprv(xprv_string: str) -> Tuple[bytes, bytes]:
     Raises:
         ValueError: If the input is not a valid xprv string.
     """
-    # Decode the Base58 string
     xprv_bytes = decode_base58(xprv_string)
 
-    # Check the length
-    if len(xprv_bytes) != 82:  # 4 (prefix) + 1 (depth) + 4 (fingerprint) + 4 (child number) + 32 (chain code) + 33 (private key) + 4 (checksum)
+    if len(xprv_bytes) != 82:
         raise ValueError("Invalid xprv string length")
 
-    # Verify the checksum
     if hash256(xprv_bytes[:-4])[:4] != xprv_bytes[-4:]:
         raise ValueError("Invalid checksum")
 
-    # Extract the chain code and private key
-    chain_code = xprv_bytes[13:45]  # 32 bytes
-    private_key = xprv_bytes[46:78]  # 32 bytes, ignoring the first byte (which should be 0x00)
+    chain_code = xprv_bytes[13:45]
+    private_key = xprv_bytes[46:78]
 
     return chain_code, private_key
 

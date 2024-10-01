@@ -1,3 +1,5 @@
+"""Tests for encoding functions"""
+
 import pytest
 from src.encoding import (
     encode_base58,

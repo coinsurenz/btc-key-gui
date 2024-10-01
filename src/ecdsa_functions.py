@@ -249,7 +249,7 @@ class PrivateKey:
 			z -= N
 		z_bytes = z.to_bytes(32, 'big')
 		secret_bytes = self.secret.to_bytes(32, 'big')
-		s256 = hashsrc.sha256
+		s256 = hashlib.sha256
 		k = hmac.new(k, v + b'\x00' + secret_bytes + z_bytes, s256).digest()
 		v = hmac.new(k, v, s256).digest()
 		k = hmac.new(k, v + b'\x01' + secret_bytes + z_bytes, s256).digest()

@@ -1,5 +1,9 @@
-import pytest
+"""Tests for seed generation functions"""
+
 import binascii
+import hashlib
+import hmac
+import pytest
 from unittest.mock import patch, Mock
 from src.seed_gen import (
     path_gen_keylist,
@@ -10,8 +14,6 @@ from src.seed_gen import (
     generate_master_pubkey,
 )
 from src.constants import AddressType
-import hashlib
-import hmac
 from src.ecdsa_functions import G
 from tests.test_constants import (
     TEST_SEED,

@@ -1,7 +1,8 @@
+"""Seed generation functions"""''
+
 import hashlib
 import hmac
 import struct
-import hashlib
 import codecs
 from typing import List, Tuple
 from ecdsa.ecdsa import int_to_string, string_to_int

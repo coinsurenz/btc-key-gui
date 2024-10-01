@@ -1,3 +1,5 @@
+"""Tests for crypto functions"""
+
 import pytest
 import binascii
 from src.crypto import hash256, hash160, create_checksum

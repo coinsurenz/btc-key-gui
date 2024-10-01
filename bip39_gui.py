@@ -15,34 +15,27 @@ class Ui_Bip39Tool(object):
     def setupUi(self, Bip39Tool):
         Bip39Tool.setObjectName("Bip39Tool")
 
-        # Get the screen size
         screen = QDesktopWidget().screenNumber(QDesktopWidget().cursor().pos())
         screen_size = QDesktopWidget().screenGeometry(screen)
 
-        # Set the window size to 90% of the screen size
         width = int(screen_size.width() * 0.9)
         height = int(screen_size.height() * 0.9)
         Bip39Tool.resize(width, height)
 
-        # Create a scroll area
         self.scrollArea = QScrollArea(Bip39Tool)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
 
-        # Create a widget to hold the content
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
 
-        # Create a vertical layout for the content
         self.verticalLayout = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout.setObjectName("verticalLayout")
 
-        # Create a widget to hold the grid layout
         self.gridLayoutWidget = QWidget(self.scrollAreaWidgetContents)
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
         self.verticalLayout.addWidget(self.gridLayoutWidget)
 
-        # Create the grid layout
         self.gridLayout = QtWidgets.QGridLayout(self.gridLayoutWidget)
         self.gridLayout.setObjectName("gridLayout")
 
@@ -492,17 +485,14 @@ class Ui_Bip39Tool(object):
         font = QtGui.QFont()
         font.setFamily("Carlito")
         font.setPointSize(13)
-        self.decode_xprv_label.setFont(font)  # Use the same font as other labels
+        self.decode_xprv_label.setFont(font)
         self.decode_xprv_label.setObjectName("decode_xprv_label")
         self.gridLayout.addWidget(self.decode_xprv_label, 21, 4, 1, 1)
 
-        # Adjust the position of the cancel and ok buttons
         self.gridLayout.addWidget(self.okbutton_box, 21, 7, 1, 1)
 
-        # Set the scroll area widget
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
 
-        # Create a layout for the main window
         self.mainLayout = QVBoxLayout(Bip39Tool)
         self.mainLayout.addWidget(self.scrollArea)
 
@@ -669,7 +659,7 @@ class Ui_Bip39Tool(object):
             self.bip39pass_box.setEnabled(True)
         else:
             self.bip39pass_box.setEnabled(False)
-            self.bip39pass_box.clear()  # Clear the content when unchecked
+            self.bip39pass_box.clear()
 
 
 if __name__ == "__main__":
